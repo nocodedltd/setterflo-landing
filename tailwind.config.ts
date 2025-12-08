@@ -12,8 +12,9 @@ const config: Config = {
       colors: {
         // SetterFlo Brand Colors (dark-first)
         background: {
-          DEFAULT: '#0E1B36', // Deep Navy
-          secondary: 'rgba(255,255,255,0.06)', // Card background
+          DEFAULT: '#050A14', // Deeper Navy/Black
+          secondary: '#0B1426', // Card background
+          tertiary: '#12203D', // Hover states
         },
         primary: {
           DEFAULT: '#00B9AD', // Primary Teal
@@ -29,28 +30,40 @@ const config: Config = {
           900: '#134e4a',
           950: '#042f2e',
         },
+        accent: {
+          purple: {
+             DEFAULT: '#8b5cf6',
+             400: '#a78bfa',
+             500: '#8b5cf6',
+             600: '#7c3aed',
+          },
+        },
         text: {
           primary: '#FFFFFF', // White primary text
-          secondary: '#C7D1E0', // Muted text
-          muted: '#A1A9B8', // More muted
+          secondary: '#94A3B8', // Muted text
+          muted: '#64748B', // More muted
         },
         border: {
-          DEFAULT: 'rgba(255,255,255,0.1)', // Subtle borders
-          muted: 'rgba(255,255,255,0.05)',
+          DEFAULT: 'rgba(255,255,255,0.08)', // Subtle borders
+          muted: 'rgba(255,255,255,0.04)',
+          hover: 'rgba(255,255,255,0.15)',
         },
         // Support colors
         success: {
           50: '#f0fdf4',
+          400: '#4ade80',
           500: '#22c55e',
           600: '#16a34a',
         },
         warning: {
           50: '#fffbeb', 
+          400: '#fbbf24',
           500: '#f59e0b',
           600: '#d97706',
         },
         error: {
           50: '#fef2f2',
+          400: '#f87171',
           500: '#ef4444',
           600: '#dc2626',
         },
@@ -60,13 +73,20 @@ const config: Config = {
         heading: ["Poppins", "Montserrat", "Inter", "system-ui", "sans-serif"],
       },
       fontSize: {
-        // Hero section text sizes
-        "hero-xl": ["4.5rem", { lineHeight: "1.1", letterSpacing: "-0.02em" }],
-        "hero-lg": ["3.5rem", { lineHeight: "1.2", letterSpacing: "-0.01em" }],
-        "hero-md": ["2.25rem", { lineHeight: "1.3" }],
+        // Refined Type Scale
+        "xs": ["0.75rem", { lineHeight: "1rem" }],
+        "sm": ["0.875rem", { lineHeight: "1.25rem" }],
+        "base": ["1rem", { lineHeight: "1.5rem" }],
+        "lg": ["1.125rem", { lineHeight: "1.75rem" }],
+        "xl": ["1.25rem", { lineHeight: "1.75rem" }],
+        "2xl": ["1.5rem", { lineHeight: "2rem" }],
+        "3xl": ["1.875rem", { lineHeight: "2.25rem" }],
+        "4xl": ["2.25rem", { lineHeight: "2.5rem" }],
       },
       spacing: {
-        // Custom spacing for sections
+        // Strict 4px grid system
+        "18": "4.5rem",
+        "22": "5.5rem",
         "section-y": "6rem",
         "section-y-sm": "4rem",
       },
@@ -75,69 +95,24 @@ const config: Config = {
         "prose": "65ch",
       },
       animation: {
-        // Smooth animations for interactions
-        "fade-up": "fadeUp 0.5s ease-out",
-        "fade-in": "fadeIn 0.3s ease-out",
-        "slide-in-right": "slideInRight 0.4s ease-out",
-        // SetterFlo specific animations
-        "word-swap": "wordSwap 3s ease-in-out infinite",
-        "typing": "typing 2s steps(40, end) infinite",
-        "glow": "glow 2s ease-in-out infinite alternate",
-        "shimmer": "shimmer 2s linear infinite",
-        "marquee": "marquee 20s linear infinite",
+        "fade-in": "fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        "slide-up": "slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        "slide-in-right": "slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
         "pulse-glow": "pulseGlow 2s ease-in-out infinite",
+        "shimmer": "shimmer 2s linear infinite",
       },
       keyframes: {
-        fadeUp: {
-          "0%": {
-            opacity: "0",
-            transform: "translateY(30px)",
-          },
-          "100%": {
-            opacity: "1", 
-            transform: "translateY(0)",
-          },
-        },
         fadeIn: {
-          "0%": {
-            opacity: "0",
-          },
-          "100%": {
-            opacity: "1",
-          },
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
         },
-        slideInRight: {
-          "0%": {
-            opacity: "0",
-            transform: "translateX(-30px)",
-          },
-          "100%": {
-            opacity: "1",
-            transform: "translateX(0)",
-          },
-        },
-        wordSwap: {
-          "0%, 20%": { opacity: "1", transform: "translateY(0)" },
-          "25%, 45%": { opacity: "0", transform: "translateY(-20px)" },
-          "50%, 70%": { opacity: "1", transform: "translateY(0)" },
-          "75%, 95%": { opacity: "0", transform: "translateY(20px)" },
+        slideUp: {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        typing: {
-          "0%": { width: "0" },
-          "100%": { width: "100%" },
-        },
-        glow: {
-          "0%": { boxShadow: "0 0 5px #00B9AD, 0 0 10px #00B9AD, 0 0 15px #00B9AD" },
-          "100%": { boxShadow: "0 0 10px #00B9AD, 0 0 20px #00B9AD, 0 0 30px #00B9AD" },
-        },
-        shimmer: {
-          "0%": { transform: "translateX(-100%)" },
-          "100%": { transform: "translateX(100%)" },
-        },
-        marquee: {
-          "0%": { transform: "translateX(0%)" },
-          "100%": { transform: "translateX(-100%)" },
+        slideInRight: {
+          "0%": { opacity: "0", transform: "translateX(-20px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
         },
         pulseGlow: {
           "0%, 100%": { 
@@ -149,15 +124,18 @@ const config: Config = {
             transform: "scale(1.05)"
           },
         },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        }
       },
-      boxShadow: {
-        "soft": "0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)",
-        "medium": "0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-        "large": "0 10px 40px -10px rgba(0, 0, 0, 0.1), 0 20px 25px -5px rgba(0, 0, 0, 0.04)",
+      backdropBlur: {
+        xs: '2px',
       },
-      borderRadius: {
-        "2xl": "1rem",
-        "3xl": "1.5rem",
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'hero-gradient': 'linear-gradient(180deg, rgba(14,27,54,0) 0%, #0E1B36 100%)',
+        'glass-gradient': 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)',
       },
     },
   },

@@ -2,13 +2,13 @@
 
 :root {
   color-scheme: dark;
-  --background: #0E1B36;
+  --background: #050A14;
   --foreground: #FFFFFF;
   --primary: #00B9AD;
-  --text-secondary: #C7D1E0;
-  --text-muted: #A1A9B8;
-  --border: rgba(255, 255, 255, 0.1);
-  --card-bg: rgba(255, 255, 255, 0.06);
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border: rgba(255, 255, 255, 0.08);
+  --card-bg: #0B1426;
 }
 
 @theme inline {
@@ -40,50 +40,68 @@ body {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00A89A;
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* Glassmorphism utilities */
-.glass {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* Premium Glassmorphism */
+.glass-panel {
+  background: linear-gradient(145deg, rgba(11, 20, 38, 0.7) 0%, rgba(5, 10, 20, 0.7) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
 }
 
-.glass-strong {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.glass-card {
+  background: rgba(11, 20, 38, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Aurora blob background */
-.aurora {
-  background: radial-gradient(circle at 20% 50%, rgba(0, 185, 173, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(0, 185, 173, 0.05) 0%, transparent 50%),
-              radial-gradient(circle at 40% 80%, rgba(0, 185, 173, 0.08) 0%, transparent 50%);
+.glass-card:hover {
+  background: rgba(11, 20, 38, 0.8);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.3);
 }
 
-/* Reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* Status Indicators */
+.status-dot {
+  @apply h-2 w-2 rounded-full;
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* Chart Gradients */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: rgba(255, 255, 255, 0.05);
+}
+
+/* Focus Rings */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Utility for hiding scrollbar but allowing scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
