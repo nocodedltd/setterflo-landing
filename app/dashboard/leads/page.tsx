@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { LeadCard } from "@/components/leads/LeadCard";
 import { Button } from "@/components/ui/Button";
-import { Search, Filter, Download, Plus, LayoutList, Kanban, Trello, ArrowUpRight } from "lucide-react";
+import { Search, Filter, Download, Plus, LayoutList, Kanban, Trello } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Mock Data

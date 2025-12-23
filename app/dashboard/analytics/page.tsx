@@ -21,10 +21,8 @@ import {
   BarChart3, 
   Download, 
   TrendingUp, 
-  Users, 
   Calendar, 
   DollarSign, 
-  ArrowUpRight,
   Filter,
   Info
 } from "lucide-react";

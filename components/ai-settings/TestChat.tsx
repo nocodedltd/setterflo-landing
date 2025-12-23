@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { RotateCcw, Save, ThumbsUp, ThumbsDown, Send } from "lucide-react";
 import { cn } from "@/lib/utils";

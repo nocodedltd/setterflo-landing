@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Play, Pause, Settings, Users, MessageSquare, CheckCircle, Phone, ArrowUpRight, Target, AlertTriangle, Copy, Edit, MoreHorizontal } from "lucide-react";
+import { Play, Pause, MessageSquare, CheckCircle, Phone, ArrowUpRight, Target, AlertTriangle, Edit, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Campaign {

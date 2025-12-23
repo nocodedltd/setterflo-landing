@@ -14,7 +14,7 @@ interface MetricCardProps {
   trendColor?: string; // Optional override
 }
 
-export function MetricCard({ title, value, change, description, icon, trendColor }: MetricCardProps) {
+export function MetricCard({ title, value, change, description, icon }: MetricCardProps) {
   return (
     <Card className="glass-card group relative overflow-hidden">
       {/* Background Glow */}

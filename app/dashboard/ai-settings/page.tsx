@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import { MessageSquare, Sliders, Zap, Bot, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +29,7 @@ export default function AISettingsPage() {
             AI Setter Config
           </h1>
           <p className="text-text-secondary max-w-lg">
-            Fine-tune your AI's personality, behavior, and sales logic.
+            Fine-tune your AI&apos;s personality, behavior, and sales logic.
           </p>
         </div>
       </div>

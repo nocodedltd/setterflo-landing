@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Zap, Clock, TrendingUp, Users, Sparkles } from "lucide-react";
+import { Clock, TrendingUp, Users, Sparkles } from "lucide-react";
 
 const insights = [
   {

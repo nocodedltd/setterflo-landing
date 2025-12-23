@@ -16,7 +16,7 @@ export default function DashboardPage() {
             Dashboard
           </h1>
           <p className="text-text-secondary max-w-lg">
-            Welcome back, Charlie. Here's what's happening with your SetterFlo agents today.
+            Welcome back, Charlie. Here&apos;s what&apos;s happening with your SetterFlo agents today.
           </p>
         </div>
         

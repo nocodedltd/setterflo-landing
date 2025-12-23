@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
-import { User, CreditCard, Bell, Users, Shield, Instagram, Zap, Database, Link as LinkIcon, CheckCircle, AlertCircle, XCircle, ChevronRight } from "lucide-react";
+import { User, CreditCard, Bell, Users, Shield, Instagram, Zap, Database, Link as LinkIcon, CheckCircle, AlertCircle, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SetupChecklist } from "@/components/settings/SetupChecklist";
 
@@ -164,7 +164,7 @@ export default function SettingsPage() {
                 <AlertCircle className="h-5 w-5 text-warning-500 shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-bold text-warning-500">Automation Safety Warning</h4>
-                  <p className="text-xs text-text-secondary mt-1">Rate limits have not been configured for the new account. We've applied conservative defaults.</p>
+                  <p className="text-xs text-text-secondary mt-1">Rate limits have not been configured for the new account. We&apos;ve applied conservative defaults.</p>
                 </div>
                 <Button size="sm" variant="outline" className="ml-auto border-warning-500/20 text-warning-500 hover:bg-warning-500/10 h-8">Fix</Button>
               </div>

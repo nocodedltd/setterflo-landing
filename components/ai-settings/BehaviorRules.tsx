@@ -58,19 +58,19 @@ export function BehaviorRules() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              <div className="flex items-center justify-between p-3 border border-border rounded-lg bg-background/50">
-              <span className="text-sm text-white">Handle "Too Expensive"</span>
+              <span className="text-sm text-white">Handle &quot;Too Expensive&quot;</span>
               <Switch defaultChecked={true} />
             </div>
             <div className="flex items-center justify-between p-3 border border-border rounded-lg bg-background/50">
-              <span className="text-sm text-white">Handle "Need to think about it"</span>
+              <span className="text-sm text-white">Handle &quot;Need to think about it&quot;</span>
               <Switch defaultChecked={true} />
             </div>
             <div className="flex items-center justify-between p-3 border border-border rounded-lg bg-background/50">
-              <span className="text-sm text-white">Handle "Already have a coach"</span>
+              <span className="text-sm text-white">Handle &quot;Already have a coach&quot;</span>
               <Switch defaultChecked={true} />
             </div>
              <div className="flex items-center justify-between p-3 border border-border rounded-lg bg-background/50">
-              <span className="text-sm text-white">Handle "Send me info"</span>
+              <span className="text-sm text-white">Handle &quot;Send me info&quot;</span>
               <Switch defaultChecked={true} />
             </div>
           </div>
