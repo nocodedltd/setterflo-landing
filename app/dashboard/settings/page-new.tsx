@@ -8,7 +8,7 @@ import { IntegrationCard } from "@/components/integrations/IntegrationCard";
 import { 
   User, CreditCard, Bell, Users, Shield, Instagram, Zap, Database, 
   Link as LinkIcon, CheckCircle, AlertCircle, ChevronRight, Calendar,
-  Mail, Target, Briefcase
+  Mail, Phone, MessageSquare, Target, FileText, Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SetupChecklist } from "@/components/settings/SetupChecklist";
@@ -72,6 +72,44 @@ export default function SettingsPage() {
         <div className="flex-1 min-w-0 space-y-6">
           {activeTab === "integrations" && (
             <div className="space-y-8 animate-fade-in">
+              {/* Instagram Section */}
+              <div className="space-y-4">
+                <div>
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Instagram className="h-5 w-5 text-pink-400" />
+                    Instagram
+                  </h2>
+                  <p className="text-sm text-text-secondary mt-1">
+                    Connect your Instagram Business or Creator accounts for DM automation
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <IntegrationCard
+                    name="Instagram Business"
+                    description="Automate DMs, qualify leads, and book calls automatically"
+                    logo={<Instagram className="h-6 w-6 text-pink-400" />}
+                    status="connected"
+                    type="instagram"
+                    connectedAccount="@nocoded.ai"
+                    features={[
+                      "Automated DM responses",
+                      "Lead qualification",
+                      "Call booking integration",
+                    ]}
+                    onConfigure={() => setActiveTab("instagram")}
+                    onDisconnect={() => console.log("Disconnect Instagram")}
+                  />
+                  <IntegrationCard
+                    name="Instagram Creator"
+                    description="Add another Instagram account for multi-account management"
+                    logo={<Instagram className="h-6 w-6 text-purple-400" />}
+                    status="disconnected"
+                    type="instagram"
+                    onConnect={() => console.log("Connect Instagram")}
+                  />
+                </div>
+              </div>
+
               {/* CRM Section */}
               <div className="space-y-4">
                 <div>
@@ -202,43 +240,97 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Webhooks Section */}
+              {/* Automation & Data Section */}
               <div className="space-y-4">
                 <div>
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
                     <Zap className="h-5 w-5 text-yellow-400" />
-                    Webhooks & Custom Integrations
+                    Automation & Data
                   </h2>
                   <p className="text-sm text-text-secondary mt-1">
-                    Send data to custom endpoints or connect to any platform
+                    Export data and connect to other automation tools
                   </p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <IntegrationCard
+                    name="Airtable"
+                    description="Export conversations and leads to Airtable"
+                    logo={<Database className="h-6 w-6 text-yellow-500" />}
+                    status="disconnected"
+                    type="database"
+                    onConnect={() => console.log("Connect Airtable")}
+                  />
+                  <IntegrationCard
+                    name="Google Sheets"
+                    description="Sync lead data to spreadsheets automatically"
+                    logo={<FileText className="h-6 w-6 text-green-600" />}
+                    status="disconnected"
+                    type="database"
+                    onConnect={() => console.log("Connect Google Sheets")}
+                  />
+                  <IntegrationCard
+                    name="Zapier"
+                    description="Connect to 5000+ apps via Zapier webhooks"
+                    logo={<Zap className="h-6 w-6 text-orange-500" />}
+                    status="disconnected"
+                    type="automation"
+                    onConnect={() => console.log("Connect Zapier")}
+                  />
+                  <IntegrationCard
+                    name="Make (Integromat)"
+                    description="Advanced workflow automation platform"
+                    logo={<Zap className="h-6 w-6 text-purple-500" />}
+                    status="disconnected"
+                    type="automation"
+                    onConnect={() => console.log("Connect Make")}
+                  />
                   <IntegrationCard
                     name="Webhook"
                     description="Send data to custom endpoints via webhooks"
                     logo={<LinkIcon className="h-6 w-6 text-blue-400" />}
                     status="disconnected"
                     type="automation"
-                    features={[
-                      "Custom endpoint configuration",
-                      "Real-time event notifications",
-                      "Flexible payload formatting",
-                    ]}
                     onConnect={() => console.log("Setup Webhook")}
                   />
+                </div>
+              </div>
+
+              {/* Communication Section */}
+              <div className="space-y-4">
+                <div>
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-green-400" />
+                    Communication
+                  </h2>
+                  <p className="text-sm text-text-secondary mt-1">
+                    Get notifications and sync conversations across platforms
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <IntegrationCard
-                    name="Zapier"
-                    description="Connect to 5000+ apps via Zapier"
-                    logo={<Zap className="h-6 w-6 text-orange-500" />}
+                    name="Slack"
+                    description="Get real-time notifications in Slack"
+                    logo={<MessageSquare className="h-6 w-6 text-purple-600" />}
                     status="disconnected"
                     type="automation"
-                    features={[
-                      "5000+ app integrations",
-                      "No-code automation",
-                      "Multi-step workflows",
-                    ]}
-                    onConnect={() => console.log("Connect Zapier")}
+                    onConnect={() => console.log("Connect Slack")}
+                  />
+                  <IntegrationCard
+                    name="Discord"
+                    description="Receive alerts in your Discord server"
+                    logo={<MessageSquare className="h-6 w-6 text-indigo-500" />}
+                    status="disconnected"
+                    type="automation"
+                    onConnect={() => console.log("Connect Discord")}
+                  />
+                  <IntegrationCard
+                    name="SMS / Twilio"
+                    description="Send SMS notifications for high-value leads"
+                    logo={<Phone className="h-6 w-6 text-red-500" />}
+                    status="disconnected"
+                    type="automation"
+                    isPremium
+                    onConnect={() => console.log("Connect Twilio")}
                   />
                 </div>
               </div>
