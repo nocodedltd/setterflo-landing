@@ -1,12 +1,7 @@
-// import { createServerClient } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(_request: NextRequest) {
-  // TEMPORARY: Disable auth middleware to debug deployment issues
-  // Will re-enable once we confirm environment variables are working
-  return NextResponse.next()
-  
-  /* TODO: Re-enable auth middleware after confirming env vars work
+export async function middleware(request: NextRequest) {
   try {
     let supabaseResponse = NextResponse.next({
       request,
@@ -15,7 +10,9 @@ export async function middleware(_request: NextRequest) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+    // If env vars are missing, let the request through (fail open for static assets)
     if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('Missing Supabase environment variables in middleware')
       return supabaseResponse
     }
 
@@ -40,10 +37,12 @@ export async function middleware(_request: NextRequest) {
       }
     )
 
+    // Refresh session if expired
     const {
       data: { user },
     } = await supabase.auth.getUser()
 
+    // Protect dashboard and onboarding routes - redirect to login if not authenticated
     if (
       !user &&
       (request.nextUrl.pathname.startsWith('/dashboard') ||
@@ -51,13 +50,16 @@ export async function middleware(_request: NextRequest) {
     ) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
+      url.searchParams.set('redirect', request.nextUrl.pathname)
       return NextResponse.redirect(url)
     }
 
+    // Redirect authenticated users away from auth pages
     if (
       user &&
       (request.nextUrl.pathname.startsWith('/login') ||
-       request.nextUrl.pathname.startsWith('/signup'))
+       request.nextUrl.pathname.startsWith('/signup') ||
+       request.nextUrl.pathname === '/forgot-password')
     ) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
@@ -66,10 +68,10 @@ export async function middleware(_request: NextRequest) {
 
     return supabaseResponse
   } catch (error) {
+    // Log error but don't break the app - fail open
     console.error('Middleware error:', error)
     return NextResponse.next()
   }
-  */
 }
 
 export const config = {
@@ -79,11 +81,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * - api routes (handled separately)
+     * - public assets
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
-
-
-
