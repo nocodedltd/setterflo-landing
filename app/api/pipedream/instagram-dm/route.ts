@@ -12,10 +12,7 @@ export async function POST(request: Request) {
     console.log('Received Instagram DM webhook:', body);
     
     const {
-      platform,
       webhook_data,
-      headers: webhookHeaders,
-      timestamp
     } = body;
 
     // Extract Instagram message data
@@ -31,13 +28,11 @@ export async function POST(request: Request) {
     const {
       sender,
       recipient,
-      timestamp: messageTimestamp,
       message: messageContent
     } = message;
 
     const instagramUserId = sender?.id;
     const messageText = messageContent?.text;
-    const messageId = messageContent?.mid;
 
     // TODO: Look up which of YOUR users owns this Instagram account
     // For now, we'll use a placeholder - you'll need to implement this
@@ -141,8 +136,8 @@ export async function POST(request: Request) {
  * TODO: Implement your actual AI logic here
  */
 async function generateAIResponse({
-  leadId,
-  userId,
+  leadId: _leadId,
+  userId: _userId,
   message,
   conversationState,
   instagramUserId
@@ -155,6 +150,7 @@ async function generateAIResponse({
 }) {
   // PLACEHOLDER - Replace with your actual AI implementation
   // Use Vercel AI SDK, OpenAI, Anthropic, etc.
+  // Note: leadId and userId are available but not used in this placeholder logic
   
   const messageLower = message.toLowerCase();
   
