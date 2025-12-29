@@ -1,16 +1,12 @@
-import { createServerClient } from '@supabase/ssr'
+// import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  // Skip middleware for static files and API routes to avoid issues
-  if (
-    request.nextUrl.pathname.startsWith('/_next') ||
-    request.nextUrl.pathname.startsWith('/api') ||
-    request.nextUrl.pathname.includes('.')
-  ) {
-    return NextResponse.next()
-  }
-
+export async function middleware(_request: NextRequest) {
+  // TEMPORARY: Disable auth middleware to debug deployment issues
+  // Will re-enable once we confirm environment variables are working
+  return NextResponse.next()
+  
+  /* TODO: Re-enable auth middleware after confirming env vars work
   try {
     let supabaseResponse = NextResponse.next({
       request,
@@ -19,9 +15,7 @@ export async function middleware(request: NextRequest) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    // If env vars not available, allow request through (for local dev)
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Supabase env vars not found in middleware')
       return supabaseResponse
     }
 
@@ -50,18 +44,16 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
-  // Protected routes - redirect to login if not authenticated
-  if (
-    !user &&
-    (request.nextUrl.pathname.startsWith('/dashboard') ||
-     request.nextUrl.pathname.startsWith('/onboarding'))
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
+    if (
+      !user &&
+      (request.nextUrl.pathname.startsWith('/dashboard') ||
+       request.nextUrl.pathname.startsWith('/onboarding'))
+    ) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
 
-    // Redirect to dashboard if already logged in and trying to access auth pages
     if (
       user &&
       (request.nextUrl.pathname.startsWith('/login') ||
@@ -74,10 +66,10 @@ export async function middleware(request: NextRequest) {
 
     return supabaseResponse
   } catch (error) {
-    // Log error but allow request to continue
     console.error('Middleware error:', error)
     return NextResponse.next()
   }
+  */
 }
 
 export const config = {
