@@ -240,3 +240,6 @@ Next steps:
 5. Build out the AI features
 
 Need help? Check `SUPABASE_SETUP.md` for more details!
+
+
+

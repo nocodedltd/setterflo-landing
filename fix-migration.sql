@@ -135,3 +135,6 @@ BEGIN
   RAISE NOTICE '   INSERT INTO ai_settings (user_id) VALUES (''YOUR_USER_ID'')';
   RAISE NOTICE '';
 END $$;
+
+
+

@@ -237,3 +237,6 @@ Everything is set up. Just run the migration SQL and you'll have a professional,
 3. Create onboarding 👋
 4. Connect Instagram API 📸
 5. Start building features! 🚀
+
+
+

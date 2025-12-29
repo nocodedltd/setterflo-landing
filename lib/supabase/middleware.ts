@@ -36,14 +36,15 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Protected routes - redirect to login if not authenticated
-  if (
-    !user &&
-    request.nextUrl.pathname.startsWith('/dashboard')
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/'
-    return NextResponse.redirect(url)
-  }
+  // TEMPORARILY DISABLED FOR DEVELOPMENT
+  // if (
+  //   !user &&
+  //   request.nextUrl.pathname.startsWith('/dashboard')
+  // ) {
+  //   const url = request.nextUrl.clone()
+  //   url.pathname = '/'
+  //   return NextResponse.redirect(url)
+  // }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
   // creating a new response object with NextResponse.next() make sure to:
@@ -60,3 +61,6 @@ export async function updateSession(request: NextRequest) {
 
   return supabaseResponse
 }
+
+
+

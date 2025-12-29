@@ -223,3 +223,6 @@ Ensure referenced records exist before inserting. Order matters:
 - [Supabase Documentation](https://supabase.com/docs)
 - [Supabase CLI Reference](https://supabase.com/docs/reference/cli)
 - [Next.js + Supabase Guide](https://supabase.com/docs/guides/getting-started/quickstarts/nextjs)
+
+
+

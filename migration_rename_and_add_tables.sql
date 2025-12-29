@@ -678,3 +678,6 @@ BEGIN
   RAISE NOTICE '';
   RAISE NOTICE 'Next step: Link existing ig_users to your app user';
 END $$;
+
+
+
