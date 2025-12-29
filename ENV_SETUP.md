@@ -64,11 +64,11 @@ INSTAGRAM_VERIFY_TOKEN=setterflo_verify_token_2024
 
 ## 📅 Calendly OAuth
 
-**From Comet Setup (when complete):**
+**From Comet Setup:**
 
 ```env
-CALENDLY_CLIENT_ID=<from-comet>
-CALENDLY_CLIENT_SECRET=<from-comet>
+CALENDLY_CLIENT_ID=C_lxgG8QWiMGkh2QKsdkyLmm2TQUZmiiNKpJYwJa3sQg
+CALENDLY_CLIENT_SECRET=KwYe7EDeTbU4wxDOyKyF6QNq8owUWOscVGvU2M3MwrI
 ```
 
 ---
@@ -138,9 +138,9 @@ INSTAGRAM_APP_SECRET=9551b995f11f76f680695c088e3517f8
 INSTAGRAM_WEBHOOK_URL=https://eo1dbmvfpv1tf1g.m.pipedream.net
 INSTAGRAM_VERIFY_TOKEN=setterflo_verify_token_2024
 
-# Calendly (add after Comet completes)
-CALENDLY_CLIENT_ID=
-CALENDLY_CLIENT_SECRET=
+# Calendly
+CALENDLY_CLIENT_ID=C_lxgG8QWiMGkh2QKsdkyLmm2TQUZmiiNKpJYwJa3sQg
+CALENDLY_CLIENT_SECRET=KwYe7EDeTbU4wxDOyKyF6QNq8owUWOscVGvU2M3MwrI
 
 # GoHighLevel (add after Comet completes)
 GOHIGHLEVEL_CLIENT_ID=

@@ -276,14 +276,16 @@ export default function SettingsPage() {
                     name="Calendly"
                     description="Share your Calendly link for instant booking"
                     logo={<Calendar className="h-6 w-6 text-blue-500" />}
-                    status="disconnected"
+                    status={connections.calendly?.status as any || "disconnected"}
+                    connectedAccount={connections.calendly?.account_name || undefined}
                     type="calendar"
                     features={[
                       "Automatic link sharing",
                       "Event type selection",
                       "Buffer time management",
                     ]}
-                    onConnect={() => console.log("Connect Calendly")}
+                    onConnect={() => handleConnect('calendly')}
+                    onDisconnect={() => handleDisconnect('calendly')}
                   />
                   <IntegrationCard
                     name="Cal.com"
