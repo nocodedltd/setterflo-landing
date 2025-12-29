@@ -75,23 +75,28 @@ CALENDLY_CLIENT_SECRET=KwYe7EDeTbU4wxDOyKyF6QNq8owUWOscVGvU2M3MwrI
 
 ## 🏢 GoHighLevel OAuth
 
-**From Comet Setup (when complete):**
+**From Comet Setup:**
 
 ```env
-GOHIGHLEVEL_CLIENT_ID=<from-comet>
-GOHIGHLEVEL_CLIENT_SECRET=<from-comet>
+GOHIGHLEVEL_CLIENT_ID=6952ea0abe59f009bafd819b-mjrn7c76
+GOHIGHLEVEL_CLIENT_SECRET=57ffee58-9ed5-43bd-adac-e1efdb98471c
+GOHIGHLEVEL_SSO_KEY=46dd4d4f-9e98-4506-ae03-65dc01c0011e
 ```
+
+**⚠️ Important:** GoHighLevel OAuth uses `/api/auth/crm/callback` instead of `/gohighlevel/callback` due to white-label policy.
 
 ---
 
 ## 📊 HubSpot OAuth
 
-**From Comet Setup (when complete):**
+**From Comet Setup:**
 
 ```env
-HUBSPOT_CLIENT_ID=<from-comet>
-HUBSPOT_CLIENT_SECRET=<from-comet>
+HUBSPOT_CLIENT_ID=c53a15a3-2f29-4500-9a04-31c831ee62e6
+HUBSPOT_CLIENT_SECRET=e4920c2f-43ca-4a85-8161-2bff5b73bcb9
 ```
+
+**Note:** HubSpot region is EU (app-eu1.hubspot.com)
 
 ---
 
@@ -142,13 +147,14 @@ INSTAGRAM_VERIFY_TOKEN=setterflo_verify_token_2024
 CALENDLY_CLIENT_ID=C_lxgG8QWiMGkh2QKsdkyLmm2TQUZmiiNKpJYwJa3sQg
 CALENDLY_CLIENT_SECRET=KwYe7EDeTbU4wxDOyKyF6QNq8owUWOscVGvU2M3MwrI
 
-# GoHighLevel (add after Comet completes)
-GOHIGHLEVEL_CLIENT_ID=
-GOHIGHLEVEL_CLIENT_SECRET=
+# GoHighLevel (⚠️ uses /crm/callback due to white-label policy)
+GOHIGHLEVEL_CLIENT_ID=6952ea0abe59f009bafd819b-mjrn7c76
+GOHIGHLEVEL_CLIENT_SECRET=57ffee58-9ed5-43bd-adac-e1efdb98471c
+GOHIGHLEVEL_SSO_KEY=46dd4d4f-9e98-4506-ae03-65dc01c0011e
 
-# HubSpot (add after Comet completes)
-HUBSPOT_CLIENT_ID=
-HUBSPOT_CLIENT_SECRET=
+# HubSpot (EU region)
+HUBSPOT_CLIENT_ID=c53a15a3-2f29-4500-9a04-31c831ee62e6
+HUBSPOT_CLIENT_SECRET=e4920c2f-43ca-4a85-8161-2bff5b73bcb9
 ```
 
 ---

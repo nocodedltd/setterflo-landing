@@ -207,22 +207,26 @@ export default function SettingsPage() {
                     name="GoHighLevel"
                     description="Sync leads, opportunities, and conversations"
                     logo={<div className="text-blue-600 font-bold text-lg">GHL</div>}
-                    status="disconnected"
+                    status={connections.gohighlevel?.status as any || "disconnected"}
+                    connectedAccount={connections.gohighlevel?.account_name || undefined}
                     type="crm"
                     features={[
                       "Automatic lead creation",
                       "Pipeline sync",
                       "Tag automation",
                     ]}
-                    onConnect={() => console.log("Connect GHL")}
+                    onConnect={() => handleConnect('crm')}
+                    onDisconnect={() => handleDisconnect('crm')}
                   />
                   <IntegrationCard
                     name="HubSpot"
                     description="Sync contacts and deals to HubSpot CRM"
                     logo={<div className="text-orange-500 font-bold text-lg">HS</div>}
-                    status="disconnected"
+                    status={connections.hubspot?.status as any || "disconnected"}
+                    connectedAccount={connections.hubspot?.account_name || undefined}
                     type="crm"
-                    onConnect={() => console.log("Connect HubSpot")}
+                    onConnect={() => handleConnect('hubspot')}
+                    onDisconnect={() => handleDisconnect('hubspot')}
                   />
                   <IntegrationCard
                     name="Pipedrive"
