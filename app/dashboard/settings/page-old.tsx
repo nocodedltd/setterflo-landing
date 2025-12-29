@@ -4,27 +4,22 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
-import { IntegrationCard } from "@/components/integrations/IntegrationCard";
-import { 
-  User, CreditCard, Bell, Users, Shield, Instagram, Zap, Database, 
-  Link as LinkIcon, CheckCircle, AlertCircle, ChevronRight, Calendar,
-  Mail, Phone, MessageSquare, Target, FileText, Briefcase
-} from "lucide-react";
+import { User, CreditCard, Bell, Users, Shield, Instagram, Zap, Database, Link as LinkIcon, CheckCircle, AlertCircle, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SetupChecklist } from "@/components/settings/SetupChecklist";
 
 const tabs = [
   { id: "account", label: "Account", icon: User },
+  { id: "automation", label: "Automation", icon: Zap, warning: true },
   { id: "integrations", label: "Integrations", icon: LinkIcon },
   { id: "instagram", label: "Instagram", icon: Instagram },
-  { id: "automation", label: "Automation", icon: Zap, warning: true },
   { id: "team", label: "Team", icon: Users },
   { id: "billing", label: "Billing", icon: CreditCard },
   { id: "notifications", label: "Notifications", icon: Bell },
 ];
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState("integrations");
+  const [activeTab, setActiveTab] = useState("account");
 
   return (
     <div className="space-y-8 flex flex-col h-full animate-fade-in pb-10">
@@ -33,7 +28,7 @@ export default function SettingsPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-heading font-bold text-white tracking-tight">Settings</h1>
           <p className="text-text-secondary max-w-lg">
-            Manage your profile, integrations, and system configurations.
+            Manage your profile, preferences, and system configurations.
           </p>
         </div>
       </div>
@@ -70,273 +65,6 @@ export default function SettingsPage() {
 
         {/* Content Area */}
         <div className="flex-1 min-w-0 space-y-6">
-          {activeTab === "integrations" && (
-            <div className="space-y-8 animate-fade-in">
-              {/* Instagram Section */}
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Instagram className="h-5 w-5 text-pink-400" />
-                    Instagram
-                  </h2>
-                  <p className="text-sm text-text-secondary mt-1">
-                    Connect your Instagram Business or Creator accounts for DM automation
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <IntegrationCard
-                    name="Instagram Business"
-                    description="Automate DMs, qualify leads, and book calls automatically"
-                    logo={<Instagram className="h-6 w-6 text-pink-400" />}
-                    status="connected"
-                    type="instagram"
-                    connectedAccount="@nocoded.ai"
-                    features={[
-                      "Automated DM responses",
-                      "Lead qualification",
-                      "Call booking integration",
-                    ]}
-                    onConfigure={() => setActiveTab("instagram")}
-                    onDisconnect={() => console.log("Disconnect Instagram")}
-                  />
-                  <IntegrationCard
-                    name="Instagram Creator"
-                    description="Add another Instagram account for multi-account management"
-                    logo={<Instagram className="h-6 w-6 text-purple-400" />}
-                    status="disconnected"
-                    type="instagram"
-                    onConnect={() => console.log("Connect Instagram")}
-                  />
-                </div>
-              </div>
-
-              {/* CRM Section */}
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Briefcase className="h-5 w-5 text-blue-400" />
-                    Customer Relationship Management (CRM)
-                  </h2>
-                  <p className="text-sm text-text-secondary mt-1">
-                    Sync leads and opportunities to your CRM automatically
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <IntegrationCard
-                    name="GoHighLevel"
-                    description="Sync leads, opportunities, and conversations"
-                    logo={<div className="text-blue-600 font-bold text-lg">GHL</div>}
-                    status="disconnected"
-                    type="crm"
-                    features={[
-                      "Automatic lead creation",
-                      "Pipeline sync",
-                      "Tag automation",
-                    ]}
-                    onConnect={() => console.log("Connect GHL")}
-                  />
-                  <IntegrationCard
-                    name="HubSpot"
-                    description="Sync contacts and deals to HubSpot CRM"
-                    logo={<div className="text-orange-500 font-bold text-lg">HS</div>}
-                    status="disconnected"
-                    type="crm"
-                    onConnect={() => console.log("Connect HubSpot")}
-                  />
-                  <IntegrationCard
-                    name="Pipedrive"
-                    description="Create deals and sync conversation notes"
-                    logo={<Target className="h-6 w-6 text-green-500" />}
-                    status="disconnected"
-                    type="crm"
-                    onConnect={() => console.log("Connect Pipedrive")}
-                  />
-                  <IntegrationCard
-                    name="ActiveCampaign"
-                    description="Sync contacts and trigger automation workflows"
-                    logo={<Mail className="h-6 w-6 text-blue-400" />}
-                    status="disconnected"
-                    type="crm"
-                    onConnect={() => console.log("Connect ActiveCampaign")}
-                  />
-                  <IntegrationCard
-                    name="Salesforce"
-                    description="Enterprise CRM integration for large teams"
-                    logo={<div className="text-blue-500 font-bold text-lg">SF</div>}
-                    status="disconnected"
-                    type="crm"
-                    isPremium
-                    onConnect={() => console.log("Connect Salesforce")}
-                  />
-                  <IntegrationCard
-                    name="Custom CRM"
-                    description="Connect via API or Zapier webhook"
-                    logo={<Database className="h-6 w-6 text-purple-400" />}
-                    status="disconnected"
-                    type="crm"
-                    comingSoon
-                  />
-                </div>
-              </div>
-
-              {/* Calendar Section */}
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-purple-400" />
-                    Calendar & Booking
-                  </h2>
-                  <p className="text-sm text-text-secondary mt-1">
-                    Let qualified leads book calls directly from Instagram DMs
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <IntegrationCard
-                    name="Calendly"
-                    description="Share your Calendly link for instant booking"
-                    logo={<Calendar className="h-6 w-6 text-blue-500" />}
-                    status="disconnected"
-                    type="calendar"
-                    features={[
-                      "Automatic link sharing",
-                      "Event type selection",
-                      "Buffer time management",
-                    ]}
-                    onConnect={() => console.log("Connect Calendly")}
-                  />
-                  <IntegrationCard
-                    name="Cal.com"
-                    description="Open-source scheduling with full customization"
-                    logo={<Calendar className="h-6 w-6 text-green-500" />}
-                    status="disconnected"
-                    type="calendar"
-                    onConnect={() => console.log("Connect Cal.com")}
-                  />
-                  <IntegrationCard
-                    name="Google Calendar"
-                    description="Check availability and create events"
-                    logo={<Calendar className="h-6 w-6 text-red-500" />}
-                    status="disconnected"
-                    type="calendar"
-                    onConnect={() => console.log("Connect Google Calendar")}
-                  />
-                  <IntegrationCard
-                    name="Microsoft Bookings"
-                    description="Integrate with Microsoft 365 calendar"
-                    logo={<Calendar className="h-6 w-6 text-blue-600" />}
-                    status="disconnected"
-                    type="calendar"
-                    onConnect={() => console.log("Connect MS Bookings")}
-                  />
-                  <IntegrationCard
-                    name="Acuity Scheduling"
-                    description="Advanced scheduling with payment options"
-                    logo={<Calendar className="h-6 w-6 text-purple-500" />}
-                    status="disconnected"
-                    type="calendar"
-                    isPremium
-                    onConnect={() => console.log("Connect Acuity")}
-                  />
-                </div>
-              </div>
-
-              {/* Automation & Data Section */}
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-yellow-400" />
-                    Automation & Data
-                  </h2>
-                  <p className="text-sm text-text-secondary mt-1">
-                    Export data and connect to other automation tools
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <IntegrationCard
-                    name="Airtable"
-                    description="Export conversations and leads to Airtable"
-                    logo={<Database className="h-6 w-6 text-yellow-500" />}
-                    status="disconnected"
-                    type="database"
-                    onConnect={() => console.log("Connect Airtable")}
-                  />
-                  <IntegrationCard
-                    name="Google Sheets"
-                    description="Sync lead data to spreadsheets automatically"
-                    logo={<FileText className="h-6 w-6 text-green-600" />}
-                    status="disconnected"
-                    type="database"
-                    onConnect={() => console.log("Connect Google Sheets")}
-                  />
-                  <IntegrationCard
-                    name="Zapier"
-                    description="Connect to 5000+ apps via Zapier webhooks"
-                    logo={<Zap className="h-6 w-6 text-orange-500" />}
-                    status="disconnected"
-                    type="automation"
-                    onConnect={() => console.log("Connect Zapier")}
-                  />
-                  <IntegrationCard
-                    name="Make (Integromat)"
-                    description="Advanced workflow automation platform"
-                    logo={<Zap className="h-6 w-6 text-purple-500" />}
-                    status="disconnected"
-                    type="automation"
-                    onConnect={() => console.log("Connect Make")}
-                  />
-                  <IntegrationCard
-                    name="Webhook"
-                    description="Send data to custom endpoints via webhooks"
-                    logo={<LinkIcon className="h-6 w-6 text-blue-400" />}
-                    status="disconnected"
-                    type="automation"
-                    onConnect={() => console.log("Setup Webhook")}
-                  />
-                </div>
-              </div>
-
-              {/* Communication Section */}
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-green-400" />
-                    Communication
-                  </h2>
-                  <p className="text-sm text-text-secondary mt-1">
-                    Get notifications and sync conversations across platforms
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <IntegrationCard
-                    name="Slack"
-                    description="Get real-time notifications in Slack"
-                    logo={<MessageSquare className="h-6 w-6 text-purple-600" />}
-                    status="disconnected"
-                    type="automation"
-                    onConnect={() => console.log("Connect Slack")}
-                  />
-                  <IntegrationCard
-                    name="Discord"
-                    description="Receive alerts in your Discord server"
-                    logo={<MessageSquare className="h-6 w-6 text-indigo-500" />}
-                    status="disconnected"
-                    type="automation"
-                    onConnect={() => console.log("Connect Discord")}
-                  />
-                  <IntegrationCard
-                    name="SMS / Twilio"
-                    description="Send SMS notifications for high-value leads"
-                    logo={<Phone className="h-6 w-6 text-red-500" />}
-                    status="disconnected"
-                    type="automation"
-                    isPremium
-                    onConnect={() => console.log("Connect Twilio")}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
           {activeTab === "account" && (
             <div className="space-y-6 animate-fade-in">
               <Card className="glass-panel border-white/[0.08]">
@@ -487,6 +215,46 @@ export default function SettingsPage() {
                    </div>
                 </CardContent>
               </Card>
+            </div>
+          )}
+
+          {activeTab === "integrations" && (
+            <div className="space-y-6 animate-fade-in">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* GoHighLevel */}
+                  <Card className="glass-panel border-white/[0.08] hover:border-primary/30 transition-all group relative overflow-hidden">
+                    <CardContent className="p-6 space-y-4 relative z-10">
+                       <div className="flex justify-between items-start">
+                          <div className="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            GHL
+                          </div>
+                          <span className="px-2 py-1 rounded-md bg-white/5 text-text-muted text-xs border border-white/10">crm</span>
+                       </div>
+                       <div>
+                         <h3 className="font-bold text-white text-lg">GoHighLevel</h3>
+                         <p className="text-sm text-text-secondary mt-1">Sync leads and opportunities.</p>
+                       </div>
+                       <Button variant="outline" className="w-full border-white/10 hover:bg-white/5 hover:text-white">Connect</Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Airtable */}
+                  <Card className="glass-panel border-white/[0.08] hover:border-primary/30 transition-all group relative overflow-hidden">
+                    <CardContent className="p-6 space-y-4 relative z-10">
+                       <div className="flex justify-between items-start">
+                          <div className="h-12 w-12 rounded-xl bg-yellow-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            <Database className="h-6 w-6" />
+                          </div>
+                          <span className="px-2 py-1 rounded-md bg-white/5 text-text-muted text-xs border border-white/10">database</span>
+                       </div>
+                       <div>
+                         <h3 className="font-bold text-white text-lg">Airtable</h3>
+                         <p className="text-sm text-text-secondary mt-1">Export conversation logs.</p>
+                       </div>
+                       <Button variant="outline" className="w-full border-white/10 hover:bg-white/5 hover:text-white">Connect</Button>
+                    </CardContent>
+                  </Card>
+               </div>
             </div>
           )}
 
