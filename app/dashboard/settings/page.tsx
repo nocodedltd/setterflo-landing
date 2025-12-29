@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
@@ -8,7 +9,7 @@ import { IntegrationCard } from "@/components/integrations/IntegrationCard";
 import { 
   User, CreditCard, Bell, Users, Shield, Instagram, Zap, Database, 
   Link as LinkIcon, CheckCircle, AlertCircle, ChevronRight, Calendar,
-  Mail, Target, Briefcase
+  Mail, Target, Briefcase, Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SetupChecklist } from "@/components/settings/SetupChecklist";
@@ -23,11 +24,129 @@ const tabs = [
   { id: "notifications", label: "Notifications", icon: Bell },
 ];
 
+type ConnectionStatus = Record<string, {
+  connected: boolean;
+  account_name: string | null;
+  status: string;
+  connectionId: string | null;
+}>;
+
 export default function SettingsPage() {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("integrations");
+  const [connections, setConnections] = useState<ConnectionStatus>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Fetch connections on mount
+  useEffect(() => {
+    fetchConnections();
+  }, []);
+
+  // Handle OAuth success/error messages
+  useEffect(() => {
+    const success = searchParams.get('oauth_success');
+    const error = searchParams.get('oauth_error');
+
+    if (success) {
+      setToast({ type: 'success', message: success });
+      // Refresh connections after successful OAuth
+      fetchConnections();
+      // Clear URL params after showing toast
+      setTimeout(() => {
+        window.history.replaceState({}, '', '/dashboard/settings');
+      }, 100);
+    }
+
+    if (error) {
+      setToast({ type: 'error', message: error });
+      // Clear URL params after showing toast
+      setTimeout(() => {
+        window.history.replaceState({}, '', '/dashboard/settings');
+      }, 100);
+    }
+  }, [searchParams]);
+
+  // Auto-hide toast after 5 seconds
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const fetchConnections = async () => {
+    try {
+      const response = await fetch('/api/auth/connections');
+      if (response.ok) {
+        const data = await response.json();
+        setConnections(data.connections || {});
+      }
+    } catch (error) {
+      console.error('Failed to fetch connections:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleConnect = async (platform: string) => {
+    setConnectingPlatform(platform);
+    // Redirect to OAuth flow
+    window.location.href = `/api/auth/${platform}/connect`;
+  };
+
+  const handleDisconnect = async (platform: string) => {
+    if (!confirm(`Are you sure you want to disconnect ${platform}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/auth/${platform}/disconnect`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        setToast({ type: 'success', message: `${platform} disconnected successfully` });
+        fetchConnections();
+      } else {
+        setToast({ type: 'error', message: `Failed to disconnect ${platform}` });
+      }
+    } catch (error) {
+      console.error('Failed to disconnect:', error);
+      setToast({ type: 'error', message: 'Failed to disconnect integration' });
+    }
+  };
 
   return (
     <div className="space-y-8 flex flex-col h-full animate-fade-in pb-10">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={cn(
+          "fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border animate-slide-in max-w-md",
+          toast.type === 'success'
+            ? "bg-success-500/10 border-success-500/30 text-success-500"
+            : "bg-error-500/10 border-error-500/30 text-error-500"
+        )}>
+          <div className="flex items-start gap-3">
+            {toast.type === 'success' ? (
+              <CheckCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+            ) : (
+              <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+            )}
+            <div className="flex-1">
+              <p className="font-medium text-sm">{toast.message}</p>
+            </div>
+            <button
+              onClick={() => setToast(null)}
+              className="text-current opacity-50 hover:opacity-100 transition-opacity"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/[0.06]">
         <div className="space-y-2">
@@ -306,33 +425,84 @@ export default function SettingsPage() {
             <Card className="glass-panel border-white/[0.08] animate-fade-in">
               <CardHeader className="border-b border-white/[0.06] pb-4">
                 <CardTitle>Connected Accounts</CardTitle>
-                <CardDescription>Manage your Instagram connections</CardDescription>
+                <CardDescription>Manage your Instagram Business Account connections</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
-                <div className="flex items-center justify-between p-4 rounded-xl border border-success-500/20 bg-success-500/5 relative overflow-hidden">
-                  <div className="flex items-center gap-4 relative z-10">
-                     <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 p-0.5 shadow-lg">
-                       <div className="h-full w-full rounded-full bg-black flex items-center justify-center">
-                         <Instagram className="h-6 w-6 text-white" />
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary-400" />
+                  </div>
+                ) : connections.instagram?.connected ? (
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-success-500/20 bg-success-500/5 relative overflow-hidden">
+                    <div className="flex items-center gap-4 relative z-10">
+                       <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 p-0.5 shadow-lg">
+                         <div className="h-full w-full rounded-full bg-black flex items-center justify-center">
+                           <Instagram className="h-6 w-6 text-white" />
+                         </div>
                        </div>
-                     </div>
-                     <div>
-                       <p className="font-bold text-white text-lg">@nocoded.ai</p>
-                       <p className="text-xs text-success-500 flex items-center gap-1.5 font-medium uppercase tracking-wide mt-0.5">
-                         <CheckCircle className="h-3 w-3" />
-                         Active & Listening
-                       </p>
-                     </div>
+                       <div>
+                         <p className="font-bold text-white text-lg">{connections.instagram.account_name || 'Instagram Account'}</p>
+                         <p className="text-xs text-success-500 flex items-center gap-1.5 font-medium uppercase tracking-wide mt-0.5">
+                           <CheckCircle className="h-3 w-3" />
+                           Connected & Active
+                         </p>
+                       </div>
+                    </div>
+                    <Button 
+                      onClick={() => handleDisconnect('instagram')}
+                      variant="outline" 
+                      size="sm" 
+                      className="border-white/10 text-text-muted hover:text-error-500 hover:border-error-500/50 hover:bg-error-500/10 bg-transparent relative z-10"
+                    >
+                      Disconnect
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm" className="border-white/10 text-text-muted hover:text-error-500 hover:border-error-500/50 hover:bg-error-500/10 bg-transparent relative z-10">Disconnect</Button>
-                </div>
+                ) : (
+                  <div className="text-center py-8 space-y-4">
+                    <div className="h-16 w-16 mx-auto rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 p-0.5 shadow-lg">
+                      <div className="h-full w-full rounded-full bg-background flex items-center justify-center">
+                        <Instagram className="h-8 w-8 text-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-1">Connect Instagram</h3>
+                      <p className="text-sm text-text-secondary max-w-md mx-auto">
+                        Connect your Instagram Business Account to start automating DM responses
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => handleConnect('instagram')}
+                      disabled={connectingPlatform === 'instagram'}
+                      className="mx-auto"
+                    >
+                      {connectingPlatform === 'instagram' ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Connecting...
+                        </>
+                      ) : (
+                        <>
+                          <Instagram className="h-4 w-4 mr-2" />
+                          Connect Instagram
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
                 
-                <Button variant="outline" className="w-full border-dashed border-white/10 text-text-muted hover:text-white hover:border-primary/50 hover:bg-primary/5 py-8 h-auto flex flex-col gap-2">
-                  <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
-                    <Instagram className="h-5 w-5" />
-                  </div>
-                  <span>Connect Another Account</span>
-                </Button>
+                {/* Connect Additional Account - Commented out for now, can enable multi-account later */}
+                {/* {connections.instagram?.connected && (
+                  <Button 
+                    onClick={() => handleConnect('instagram')}
+                    variant="outline" 
+                    className="w-full border-dashed border-white/10 text-text-muted hover:text-white hover:border-primary/50 hover:bg-primary/5 py-8 h-auto flex flex-col gap-2"
+                  >
+                    <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
+                      <Instagram className="h-5 w-5" />
+                    </div>
+                    <span>Connect Another Account</span>
+                  </Button>
+                )} */}
               </CardContent>
             </Card>
           )}

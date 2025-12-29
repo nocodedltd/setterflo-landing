@@ -1,14 +1,14 @@
 /**
- * Instagram OAuth - Disconnect
+ * OAuth Connections API
  * 
- * Removes Instagram connection from database
+ * Get all OAuth connections for the current user
  */
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { deleteConnection } from '@/lib/oauth/connections';
+import { getConnectionStatusSummary } from '@/lib/oauth/connections';
 
-export async function POST() {
+export async function GET() {
   try {
     // Check user authentication
     const supabase = await createClient();
@@ -21,21 +21,18 @@ export async function POST() {
       );
     }
 
-    // Delete the connection
-    await deleteConnection('instagram', user.id);
+    // Get connection status summary
+    const connections = await getConnectionStatusSummary(user.id);
 
-    console.log('✅ Instagram connection deleted for user:', user.id);
-
-    // Return success
     return NextResponse.json({
       success: true,
-      message: 'Instagram disconnected successfully',
+      connections,
     });
 
   } catch (error) {
-    console.error('❌ Instagram disconnect error:', error);
+    console.error('❌ Failed to fetch connections:', error);
     return NextResponse.json(
-      { error: 'Failed to disconnect Instagram' },
+      { error: 'Failed to fetch connections' },
       { status: 500 }
     );
   }
