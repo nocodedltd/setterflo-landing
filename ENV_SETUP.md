@@ -147,6 +147,10 @@ INSTAGRAM_VERIFY_TOKEN=setterflo_verify_token_2024
 CALENDLY_CLIENT_ID=C_lxgG8QWiMGkh2QKsdkyLmm2TQUZmiiNKpJYwJa3sQg
 CALENDLY_CLIENT_SECRET=KwYe7EDeTbU4wxDOyKyF6QNq8owUWOscVGvU2M3MwrI
 
+# Cal.com (add after setup)
+CALCOM_CLIENT_ID=
+CALCOM_CLIENT_SECRET=
+
 # GoHighLevel (⚠️ uses /crm/callback due to white-label policy)
 GOHIGHLEVEL_CLIENT_ID=6952ea0abe59f009bafd819b-mjrn7c76
 GOHIGHLEVEL_CLIENT_SECRET=57ffee58-9ed5-43bd-adac-e1efdb98471c

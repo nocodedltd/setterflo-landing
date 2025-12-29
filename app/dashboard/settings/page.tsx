@@ -295,9 +295,11 @@ export default function SettingsPage() {
                     name="Cal.com"
                     description="Open-source scheduling with full customization"
                     logo={<Calendar className="h-6 w-6 text-green-500" />}
-                    status="disconnected"
+                    status={connections.calcom?.status as any || "disconnected"}
+                    connectedAccount={connections.calcom?.account_name || undefined}
                     type="calendar"
-                    onConnect={() => console.log("Connect Cal.com")}
+                    onConnect={() => handleConnect('calcom')}
+                    onDisconnect={() => handleDisconnect('calcom')}
                   />
                   <IntegrationCard
                     name="Google Calendar"
