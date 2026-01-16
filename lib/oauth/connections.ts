@@ -7,7 +7,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { encryptToken, decryptToken } from './encryption';
 
-export type Platform = 'instagram' | 'calendly' | 'calcom' | 'gohighlevel' | 'hubspot' | 'pipedrive' | 'activecampaign' | 'salesforce';
+export type Platform = 'instagram' | 'calendly' | 'calcom' | 'gohighlevel' | 'hubspot' | 'pipedrive' | 'activecampaign' | 'salesforce' | 'monday';
 export type ConnectionStatus = 'connected' | 'disconnected' | 'error' | 'expired';
 
 export interface OAuthConnection {

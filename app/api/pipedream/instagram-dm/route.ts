@@ -1,26 +1,58 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { 
+  findUserByInstagramAccount,
+  getOrCreateConversation,
+  createMessage,
+  updateConversationQualificationState,
+} from '@/lib/instagram/conversations';
 
 /**
  * Pipedream Instagram DM Webhook Handler
- * Receives Instagram DM data from Pipedream and processes with AI
+ * 
+ * Receives Instagram DM webhooks from Pipedream and:
+ * 1. Identifies which SetterFlo user owns the Instagram account
+ * 2. Stores the message in the database
+ * 3. Returns instructions for AI processing (to be implemented)
+ * 
+ * Architecture:
+ * - Pipedream receives webhook from Meta
+ * - Pipedream forwards to this endpoint with formatted data
+ * - This endpoint handles user identification and storage
+ * - Future: AI agent processes message and returns action
  */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    console.log('Received Instagram DM webhook:', body);
+    console.log('📨 Received Instagram DM webhook:', JSON.stringify(body, null, 2));
     
-    const {
-      webhook_data,
-    } = body;
-
-    // Extract Instagram message data
-    const message = webhook_data?.entry?.[0]?.messaging?.[0];
+    // Extract webhook data (structure depends on how Pipedream formats it)
+    // Expected format from Pipedream:
+    // {
+    //   webhook_data: {
+    //     entry: [{
+    //       messaging: [{
+    //         sender: { id: "instagram_user_id" },
+    //         recipient: { id: "instagram_business_account_id" },
+    //         message: { text: "Hello", mid: "message_id" },
+    //         timestamp: 1234567890
+    //       }]
+    //     }]
+    //   }
+    // }
     
-    if (!message) {
+    const webhookData = body.webhook_data || body;
+    const entry = webhookData?.entry?.[0];
+    const messaging = entry?.messaging?.[0];
+    
+    if (!messaging) {
+      console.error('❌ Invalid webhook structure:', body);
       return NextResponse.json(
-        { error: 'Invalid webhook data structure' },
+        { 
+          error: 'Invalid webhook data structure',
+          action: 'none',
+          reply: null
+        },
         { status: 400 }
       );
     }
@@ -28,98 +60,118 @@ export async function POST(request: Request) {
     const {
       sender,
       recipient,
-      message: messageContent
-    } = message;
+      message: messageContent,
+      timestamp
+    } = messaging;
 
-    const instagramUserId = sender?.id;
-    const messageText = messageContent?.text;
+    // Extract Instagram IDs
+    const instagramUserId = sender?.id; // The lead messaging us
+    const instagramAccountId = recipient?.id; // Our Instagram Business Account (receiving the message)
+    const messageText = messageContent?.text || '';
+    const instagramMessageId = messageContent?.mid;
+    const messageTimestamp = timestamp ? new Date(timestamp * 1000).toISOString() : new Date().toISOString();
 
-    // TODO: Look up which of YOUR users owns this Instagram account
-    // For now, we'll use a placeholder - you'll need to implement this
-    // based on how you store user's connected Instagram accounts
-    const supabase = await createClient();
-    
-    // Example: Find the user who owns this Instagram account
-    const { data: userAccount } = await supabase
-      .from('users')
-      .select('id, instagram_account_id')
-      .eq('instagram_account_id', recipient?.id)
-      .single();
-
-    if (!userAccount) {
-      console.error('No user found for Instagram account:', recipient?.id);
+    if (!instagramUserId || !instagramAccountId) {
+      console.error('❌ Missing required Instagram IDs:', { instagramUserId, instagramAccountId });
       return NextResponse.json(
         { 
-          error: 'Instagram account not linked to any user',
+          error: 'Missing Instagram user or account ID',
           action: 'none',
           reply: null
         },
-        { status: 200 }
+        { status: 400 }
       );
     }
 
-    // Check if this is a new lead or existing conversation
-    const { data: existingLead } = await supabase
-      .from('ig_users')
-      .select('id, conversation_state, last_message')
-      .eq('instagram_user_id', instagramUserId)
-      .eq('user_id', userAccount.id)
-      .single();
+    console.log('🔍 Looking up user for Instagram account:', instagramAccountId);
 
-    // TODO: IMPLEMENT YOUR AI LOGIC HERE
-    // This is where you'd call OpenAI, Anthropic, etc.
-    // For now, returning a simple response structure
+    // Step 1: Find which SetterFlo user owns this Instagram account
+    const userInfo = await findUserByInstagramAccount(instagramAccountId);
     
-    const aiResponse = await generateAIResponse({
-      leadId: existingLead?.id,
-      userId: userAccount.id,
-      message: messageText,
-      conversationState: existingLead?.conversation_state || 'new',
-      instagramUserId
-    });
-
-    // Log conversation to database
-    if (existingLead) {
-      await supabase
-        .from('ig_users')
-        .update({
-          last_message: messageText,
-          last_message_at: new Date().toISOString(),
-          conversation_state: aiResponse.nextState
-        })
-        .eq('id', existingLead.id);
-    } else {
-      // Create new lead
-      await supabase
-        .from('ig_users')
-        .insert({
-          user_id: userAccount.id,
-          instagram_user_id: instagramUserId,
-          instagram_username: sender?.username || 'unknown',
-          last_message: messageText,
-          last_message_at: new Date().toISOString(),
-          conversation_state: aiResponse.nextState,
-          status: 'active'
-        });
+    if (!userInfo) {
+      console.error('❌ No SetterFlo user found for Instagram account:', instagramAccountId);
+      return NextResponse.json(
+        { 
+          error: 'Instagram account not linked to any SetterFlo user',
+          action: 'none',
+          reply: null
+        },
+        { status: 200 } // Return 200 so Pipedream doesn't retry
+      );
     }
 
-    // Return instructions for Pipedream to execute
+    console.log('✅ Found SetterFlo user:', userInfo.userId);
+
+    // Step 2: Get or create conversation
+    const conversation = await getOrCreateConversation(
+      userInfo.userId,
+      instagramAccountId,
+      instagramUserId,
+      undefined, // username (can be fetched from Instagram API if needed)
+      undefined, // name (can be fetched from Instagram API if needed)
+      undefined, // threadId (if available in webhook)
+      userInfo.connectionId
+    );
+
+    console.log('✅ Conversation ready:', conversation.id);
+
+    // Step 3: Store the message
+    const storedMessage = await createMessage(
+      conversation.id,
+      messageText || '[No text content]',
+      'lead', // Message from the lead
+      {
+        instagramMessageId,
+        instagramTimestamp: messageTimestamp,
+        messageType: messageContent?.attachments ? 'image' : 'text', // Basic detection
+        mediaUrl: messageContent?.attachments?.[0]?.payload?.url,
+        mediaType: messageContent?.attachments?.[0]?.type,
+      }
+    );
+
+    console.log('✅ Message stored:', storedMessage.id);
+
+    // Step 4: TODO - Process with AI agent
+    // This is where we'll call the AI agent system to:
+    // - Analyze the message
+    // - Determine qualification state
+    // - Generate response
+    // - Decide on actions (send DM, create deal, book calendar, etc.)
+    
+    // For now, return a placeholder structure
+    const aiResponse = await generateAIResponse({
+      conversationId: conversation.id,
+      userId: userInfo.userId,
+      message: messageText,
+      qualificationState: conversation.qualification_state,
+      instagramUserId,
+      accessToken: userInfo.accessToken,
+    });
+
+    // Step 5: Update conversation qualification state if changed
+    if (aiResponse.nextQualificationState && aiResponse.nextQualificationState !== conversation.qualification_state) {
+      await updateConversationQualificationState(conversation.id, aiResponse.nextQualificationState);
+    }
+
+    // Step 6: Return instructions for Pipedream
     return NextResponse.json({
       success: true,
-      action: aiResponse.action, // 'send_dm', 'book_calendar', 'create_deal', or 'none'
+      action: aiResponse.action, // 'send_dm', 'book_calendar', 'create_deal', 'none'
       reply: aiResponse.reply,
       metadata: {
+        conversation_id: conversation.id,
+        message_id: storedMessage.id,
         recipient_id: instagramUserId,
-        lead_id: existingLead?.id,
+        qualification_state: aiResponse.nextQualificationState || conversation.qualification_state,
         should_book: aiResponse.shouldBook,
         should_create_deal: aiResponse.shouldCreateDeal,
         deal_data: aiResponse.dealData,
-        calendar_data: aiResponse.calendarData
+        calendar_data: aiResponse.calendarData,
       }
     });
 
   } catch (error) {
-    console.error('Error processing Instagram DM:', error);
+    console.error('❌ Error processing Instagram DM:', error);
     return NextResponse.json(
       { 
         error: 'Internal server error',
@@ -133,54 +185,73 @@ export async function POST(request: Request) {
 
 /**
  * Generate AI response based on conversation context
- * TODO: Implement your actual AI logic here
+ * 
+ * TODO: Replace with actual AI agent system that:
+ * - Uses Vercel AI SDK or similar
+ * - Has access to user's CRM/Calendar integrations
+ * - Can call tools (send DM, create deal, book calendar, etc.)
+ * - Maintains conversation context
  */
 async function generateAIResponse({
-  leadId: _leadId,
-  userId: _userId,
+  conversationId,
+  userId,
   message,
-  conversationState,
-  instagramUserId
+  qualificationState,
+  instagramUserId,
+  accessToken,
 }: {
-  leadId?: string;
+  conversationId: string;
   userId: string;
   message: string;
-  conversationState: string;
+  qualificationState: string;
   instagramUserId: string;
-}) {
-  // PLACEHOLDER - Replace with your actual AI implementation
-  // Use Vercel AI SDK, OpenAI, Anthropic, etc.
-  // Note: leadId and userId are available but not used in this placeholder logic
+  accessToken: string;
+}): Promise<{
+  action: 'send_dm' | 'book_calendar' | 'create_deal' | 'none';
+  reply: string | null;
+  nextQualificationState?: 'new' | 'qualifying' | 'qualified' | 'not_interested' | 'booked' | 'closed';
+  shouldBook: boolean;
+  shouldCreateDeal: boolean;
+  dealData?: any;
+  calendarData?: any;
+}> {
+  // PLACEHOLDER - Replace with actual AI implementation
+  // This will be replaced with a multi-agent AI system that:
+  // 1. Analyzes the message
+  // 2. Determines qualification state
+  // 3. Generates appropriate response
+  // 4. Decides on actions (CRM, calendar, etc.)
   
   const messageLower = message.toLowerCase();
   
-  // Simple qualification logic
-  if (conversationState === 'new') {
+  // Simple state machine for now
+  if (qualificationState === 'new') {
     return {
       action: 'send_dm',
       reply: "Hi! Thanks for reaching out. I'd love to help you book a discovery call. What are you currently struggling with in your business?",
-      nextState: 'qualifying',
+      nextQualificationState: 'qualifying',
       shouldBook: false,
       shouldCreateDeal: true,
       dealData: {
-        name: `Instagram Lead - ${instagramUserId}`,
+        name: `Instagram Lead - ${instagramUserId.substring(0, 8)}`,
         stage: 'New Lead',
-        source: 'Instagram DM'
+        source: 'Instagram DM',
+        qualification_state: 'qualifying',
       }
     };
   }
   
-  if (conversationState === 'qualifying') {
+  if (qualificationState === 'qualifying') {
     if (messageLower.includes('book') || messageLower.includes('call') || messageLower.includes('schedule')) {
       return {
         action: 'book_calendar',
         reply: "Great! I'd love to schedule a call with you. What's your email address?",
-        nextState: 'booking',
+        nextQualificationState: 'booking',
         shouldBook: true,
         shouldCreateDeal: false,
         calendarData: {
           event_type: 'discovery-call',
-          duration: 30
+          duration: 30,
         }
       };
     }
@@ -188,7 +259,7 @@ async function generateAIResponse({
     return {
       action: 'send_dm',
       reply: "I understand. Based on what you've shared, I think a 30-minute strategy call could really help. Would you like to schedule that?",
-      nextState: 'qualifying',
+      nextQualificationState: 'qualifying',
       shouldBook: false,
       shouldCreateDeal: false
     };
@@ -198,7 +269,7 @@ async function generateAIResponse({
   return {
     action: 'send_dm',
     reply: "Thanks for your message! How can I help you today?",
-    nextState: conversationState,
+    nextQualificationState: qualificationState as any,
     shouldBook: false,
     shouldCreateDeal: false
   };
@@ -206,6 +277,9 @@ async function generateAIResponse({
 
 /**
  * Webhook verification for Instagram (required by Meta)
+ * 
+ * Meta sends a GET request to verify the webhook endpoint.
+ * Pipedream should handle this, but we include it here for direct webhook testing.
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -218,9 +292,10 @@ export async function GET(request: Request) {
   const VERIFY_TOKEN = process.env.INSTAGRAM_VERIFY_TOKEN || 'setterflo_verify_token_2024';
   
   if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-    console.log('Instagram webhook verified successfully');
+    console.log('✅ Instagram webhook verified successfully');
     return new Response(challenge, { status: 200 });
   }
   
+  console.log('❌ Webhook verification failed:', { mode, token, expected: VERIFY_TOKEN });
   return new Response('Forbidden', { status: 403 });
 }

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS oauth_connections (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   
   -- Platform identification
-  platform TEXT NOT NULL CHECK (platform IN ('instagram', 'calendly', 'calcom', 'gohighlevel', 'hubspot', 'pipedrive', 'activecampaign', 'salesforce')),
+  platform TEXT NOT NULL CHECK (platform IN ('instagram', 'calendly', 'calcom', 'gohighlevel', 'hubspot', 'pipedrive', 'activecampaign', 'salesforce', 'monday')),
   platform_user_id TEXT, -- Their user ID on the platform
   platform_account_name TEXT, -- Display name (e.g., '@nocoded.ai', 'john@company.com')
   platform_account_email TEXT, -- Email if available
@@ -90,7 +90,7 @@ CREATE POLICY "Users can delete their own OAuth connections"
 CREATE TABLE IF NOT EXISTS integration_settings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  platform TEXT NOT NULL CHECK (platform IN ('instagram', 'calendly', 'calcom', 'gohighlevel', 'hubspot', 'pipedrive', 'activecampaign', 'salesforce')),
+  platform TEXT NOT NULL CHECK (platform IN ('instagram', 'calendly', 'calcom', 'gohighlevel', 'hubspot', 'pipedrive', 'activecampaign', 'salesforce', 'monday')),
   
   -- User preferences (platform-specific)
   settings JSONB DEFAULT '{}',
