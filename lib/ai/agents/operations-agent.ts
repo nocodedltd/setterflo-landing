@@ -20,7 +20,7 @@ export class OperationsAgent {
   async execute(
     context: ConversationContext,
     aiResponse: AIResponse,
-    dataResult?: AgentResult | null
+    _dataResult?: AgentResult | null
   ): Promise<AgentResult> {
     const toolsUsed: string[] = [];
 

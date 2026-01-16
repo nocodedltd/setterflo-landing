@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  // outputFileTracingRoot moved out of experimental per Next.js warning
+  outputFileTracingRoot: path.join(__dirname, ".."),
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,

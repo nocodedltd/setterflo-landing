@@ -5,7 +5,7 @@
  * and manages lead qualification, CRM updates, and calendar booking.
  */
 
-export type QualificationState = 'new' | 'qualifying' | 'qualified' | 'not_interested' | 'booked' | 'closed';
+export type QualificationState = 'new' | 'qualifying' | 'qualified' | 'booking' | 'not_interested' | 'booked' | 'closed';
 
 export type ActionType = 'send_dm' | 'book_calendar' | 'create_deal' | 'update_deal' | 'create_contact' | 'none';
 

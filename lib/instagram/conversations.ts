@@ -22,7 +22,7 @@ export interface Conversation {
   ai_enabled: boolean;
   ai_paused_at: string | null;
   ai_paused_reason: string | null;
-  qualification_state: 'new' | 'qualifying' | 'qualified' | 'not_interested' | 'booked' | 'closed' | null;
+  qualification_state: 'new' | 'qualifying' | 'qualified' | 'booking' | 'not_interested' | 'booked' | 'closed' | null;
   last_message_at: string | null;
   last_message_preview: string | null;
   first_contact_at: string | null;

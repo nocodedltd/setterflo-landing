@@ -264,7 +264,6 @@ export default function ContactForm({ className }: ContactFormProps) {
                   type="submit"
                   size="lg"
                   loading={isSubmitting}
-                  loadingText="Sending..."
                   className="w-full"
                   disabled={isSubmitting}
                 >

@@ -8,8 +8,6 @@
  */
 
 import { ConversationContext, AIResponse, AgentResult } from './types';
-import { getConnectionByPlatform } from '@/lib/oauth/connections';
-import type { Platform } from '@/lib/oauth/connections';
 
 export class DataAgent {
   /**

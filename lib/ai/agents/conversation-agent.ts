@@ -7,7 +7,7 @@
  * - Whether to book calendar or create deal
  */
 
-import { ConversationContext, AIResponse, QualificationState } from './types';
+import { ConversationContext, AIResponse } from './types';
 
 export class ConversationAgent {
   /**
@@ -55,8 +55,8 @@ export class ConversationAgent {
 
   private handleNewLead(
     context: ConversationContext,
-    messageLower: string,
-    originalMessage: string
+    _messageLower: string,
+    _originalMessage: string
   ): AIResponse {
     // First contact - greet and start qualification
     return {
@@ -77,9 +77,9 @@ export class ConversationAgent {
   }
 
   private handleQualifying(
-    context: ConversationContext,
+    _context: ConversationContext,
     messageLower: string,
-    originalMessage: string
+    _originalMessage: string
   ): AIResponse {
     // Check for booking intent
     const bookingKeywords = ['book', 'call', 'schedule', 'meeting', 'appointment', 'calendar', 'time'];
@@ -130,9 +130,9 @@ export class ConversationAgent {
   }
 
   private handleQualified(
-    context: ConversationContext,
+    _context: ConversationContext,
     messageLower: string,
-    originalMessage: string
+    _originalMessage: string
   ): AIResponse {
     // Lead is qualified - push for booking
     const bookingKeywords = ['book', 'call', 'schedule', 'meeting'];
@@ -166,8 +166,8 @@ export class ConversationAgent {
   }
 
   private handleBooking(
-    context: ConversationContext,
-    messageLower: string,
+    _context: ConversationContext,
+    _messageLower: string,
     originalMessage: string
   ): AIResponse {
     // Extract email if present
@@ -205,9 +205,9 @@ export class ConversationAgent {
   }
 
   private handleNotInterested(
-    context: ConversationContext,
-    messageLower: string,
-    originalMessage: string
+    _context: ConversationContext,
+    _messageLower: string,
+    _originalMessage: string
   ): AIResponse {
     // Lead said not interested - be respectful and close
     return {
@@ -223,8 +223,8 @@ export class ConversationAgent {
 
   private handleClosed(
     context: ConversationContext,
-    messageLower: string,
-    originalMessage: string
+    _messageLower: string,
+    _originalMessage: string
   ): AIResponse {
     // Conversation is closed/booked - minimal response
     return {

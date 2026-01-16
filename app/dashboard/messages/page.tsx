@@ -241,7 +241,6 @@ export default function MessagesPage() {
           <div className="relative flex items-center gap-3 max-w-4xl mx-auto">
             <div className="flex gap-1">
                 <Button variant="ghost" size="icon" className="text-text-muted hover:text-white rounded-full hover:bg-white/5 transition-colors">
-                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image className="h-5 w-5" />
                 </Button>
                 <Button variant="ghost" size="icon" className="text-text-muted hover:text-white rounded-full hover:bg-white/5 transition-colors">

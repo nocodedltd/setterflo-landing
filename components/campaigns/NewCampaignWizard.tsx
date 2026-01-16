@@ -74,7 +74,7 @@ export function NewCampaignWizard({ onClose }: { onClose: () => void }) {
              <div className="max-w-2xl mx-auto space-y-6">
                <div className="space-y-2">
                  <h1 className="text-2xl font-bold text-white">Campaign Basics</h1>
-                 <p className="text-text-secondary">Let&apos;s give your campaign a name and objective.</p>
+                 <p className="text-text-secondary">Let's give your campaign a name and objective.</p>
                </div>
                
                <Card className="glass-panel border-white/[0.08]">

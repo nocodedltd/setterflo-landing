@@ -374,7 +374,6 @@ const BookingSection = ({ className }: BookingSectionProps) => {
                     <Button
                       type="submit"
                       loading={isSubmitting}
-                      loadingText="Setting up your trial..."
                       className="w-full"
                       size="lg"
                     >

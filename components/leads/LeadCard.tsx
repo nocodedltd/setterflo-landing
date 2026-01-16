@@ -59,7 +59,7 @@ export function LeadCard({ lead }: LeadCardProps) {
         <div className="relative group/msg">
           <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-white/10 rounded-full group-hover/msg:bg-primary/50 transition-colors" />
           <div className="pl-2.5 py-0.5">
-            <p className="text-xs text-text-secondary line-clamp-2 italic leading-relaxed">&quot;{lead.lastMessage}&quot;</p>
+            <p className="text-xs text-text-secondary line-clamp-2 italic leading-relaxed">"{lead.lastMessage}"</p>
             <p className="text-[10px] text-text-muted mt-1">{lead.lastMessageTime}</p>
           </div>
         </div>

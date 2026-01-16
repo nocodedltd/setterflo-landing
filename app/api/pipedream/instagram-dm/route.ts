@@ -3,7 +3,6 @@ import {
   findUserByInstagramAccount,
   getOrCreateConversation,
   createMessage,
-  updateConversationQualificationState,
 } from '@/lib/instagram/conversations';
 import { AIOrchestrator } from '@/lib/ai/agents/orchestrator';
 import { buildConversationContext } from '@/lib/ai/agents/context-builder';

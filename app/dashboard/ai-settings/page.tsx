@@ -29,7 +29,7 @@ export default function AISettingsPage() {
             AI Setter Config
           </h1>
           <p className="text-text-secondary max-w-lg">
-            Fine-tune your AI&apos;s personality, behavior, and sales logic.
+            Fine-tune your AI's personality, behavior, and sales logic.
           </p>
         </div>
       </div>

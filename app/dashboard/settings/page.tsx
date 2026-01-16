@@ -1,158 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
-import { IntegrationCard } from "@/components/integrations/IntegrationCard";
-import { 
-  User, CreditCard, Bell, Users, Shield, Instagram, Zap, Database, 
-  Link as LinkIcon, CheckCircle, AlertCircle, ChevronRight, Calendar,
-  Mail, Target, Briefcase, Loader2
-} from "lucide-react";
+import { User, CreditCard, Bell, Users, Shield, Instagram, Zap, Database, Link as LinkIcon, CheckCircle, AlertCircle, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SetupChecklist } from "@/components/settings/SetupChecklist";
 
 const tabs = [
   { id: "account", label: "Account", icon: User },
+  { id: "automation", label: "Automation", icon: Zap, warning: true },
   { id: "integrations", label: "Integrations", icon: LinkIcon },
   { id: "instagram", label: "Instagram", icon: Instagram },
-  { id: "automation", label: "Automation", icon: Zap, warning: true },
   { id: "team", label: "Team", icon: Users },
   { id: "billing", label: "Billing", icon: CreditCard },
   { id: "notifications", label: "Notifications", icon: Bell },
 ];
 
-type ConnectionStatus = Record<string, {
-  connected: boolean;
-  account_name: string | null;
-  status: string;
-  connectionId: string | null;
-}>;
-
 export default function SettingsPage() {
-  const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState("integrations");
-  const [connections, setConnections] = useState<ConnectionStatus>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  // Fetch connections on mount
-  useEffect(() => {
-    fetchConnections();
-  }, []);
-
-  // Handle OAuth success/error messages
-  useEffect(() => {
-    const success = searchParams.get('oauth_success');
-    const error = searchParams.get('oauth_error');
-
-    if (success) {
-      setToast({ type: 'success', message: success });
-      // Refresh connections after successful OAuth
-      fetchConnections();
-      // Clear URL params after showing toast
-      setTimeout(() => {
-        window.history.replaceState({}, '', '/dashboard/settings');
-      }, 100);
-    }
-
-    if (error) {
-      setToast({ type: 'error', message: error });
-      // Clear URL params after showing toast
-      setTimeout(() => {
-        window.history.replaceState({}, '', '/dashboard/settings');
-      }, 100);
-    }
-  }, [searchParams]);
-
-  // Auto-hide toast after 5 seconds
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
-
-  const fetchConnections = async () => {
-    try {
-      const response = await fetch('/api/auth/connections');
-      if (response.ok) {
-        const data = await response.json();
-        setConnections(data.connections || {});
-      }
-    } catch (error) {
-      console.error('Failed to fetch connections:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleConnect = async (platform: string) => {
-    setConnectingPlatform(platform);
-    // Redirect to OAuth flow
-    window.location.href = `/api/auth/${platform}/connect`;
-  };
-
-  const handleDisconnect = async (platform: string) => {
-    if (!confirm(`Are you sure you want to disconnect ${platform}?`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/auth/${platform}/disconnect`, {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        setToast({ type: 'success', message: `${platform} disconnected successfully` });
-        fetchConnections();
-      } else {
-        setToast({ type: 'error', message: `Failed to disconnect ${platform}` });
-      }
-    } catch (error) {
-      console.error('Failed to disconnect:', error);
-      setToast({ type: 'error', message: 'Failed to disconnect integration' });
-    }
-  };
+  const [activeTab, setActiveTab] = useState("account");
 
   return (
     <div className="space-y-8 flex flex-col h-full animate-fade-in pb-10">
-      {/* Toast Notification */}
-      {toast && (
-        <div className={cn(
-          "fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border animate-slide-in max-w-md",
-          toast.type === 'success'
-            ? "bg-success-500/10 border-success-500/30 text-success-500"
-            : "bg-error-500/10 border-error-500/30 text-error-500"
-        )}>
-          <div className="flex items-start gap-3">
-            {toast.type === 'success' ? (
-              <CheckCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-            ) : (
-              <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-            )}
-            <div className="flex-1">
-              <p className="font-medium text-sm">{toast.message}</p>
-            </div>
-            <button
-              onClick={() => setToast(null)}
-              className="text-current opacity-50 hover:opacity-100 transition-opacity"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/[0.06]">
         <div className="space-y-2">
           <h1 className="text-3xl font-heading font-bold text-white tracking-tight">Settings</h1>
           <p className="text-text-secondary max-w-lg">
-            Manage your profile, integrations, and system configurations.
+            Manage your profile, preferences, and system configurations.
           </p>
         </div>
       </div>
@@ -189,189 +65,6 @@ export default function SettingsPage() {
 
         {/* Content Area */}
         <div className="flex-1 min-w-0 space-y-6">
-          {activeTab === "integrations" && (
-            <div className="space-y-8 animate-fade-in">
-              {/* CRM Section */}
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Briefcase className="h-5 w-5 text-blue-400" />
-                    Customer Relationship Management (CRM)
-                  </h2>
-                  <p className="text-sm text-text-secondary mt-1">
-                    Sync leads and opportunities to your CRM automatically
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <IntegrationCard
-                    name="GoHighLevel"
-                    description="Sync leads, opportunities, and conversations"
-                    logo={<div className="text-blue-600 font-bold text-lg">GHL</div>}
-                    status={connections.gohighlevel?.status as any || "disconnected"}
-                    connectedAccount={connections.gohighlevel?.account_name || undefined}
-                    type="crm"
-                    features={[
-                      "Automatic lead creation",
-                      "Pipeline sync",
-                      "Tag automation",
-                    ]}
-                    onConnect={() => handleConnect('crm')}
-                    onDisconnect={() => handleDisconnect('crm')}
-                  />
-                  <IntegrationCard
-                    name="HubSpot"
-                    description="Sync contacts and deals to HubSpot CRM"
-                    logo={<div className="text-orange-500 font-bold text-lg">HS</div>}
-                    status={connections.hubspot?.status as any || "disconnected"}
-                    connectedAccount={connections.hubspot?.account_name || undefined}
-                    type="crm"
-                    onConnect={() => handleConnect('hubspot')}
-                    onDisconnect={() => handleDisconnect('hubspot')}
-                  />
-                  <IntegrationCard
-                    name="Pipedrive"
-                    description="Create deals and sync conversation notes"
-                    logo={<Target className="h-6 w-6 text-green-500" />}
-                    status="disconnected"
-                    type="crm"
-                    onConnect={() => console.log("Connect Pipedrive")}
-                  />
-                  <IntegrationCard
-                    name="ActiveCampaign"
-                    description="Sync contacts and trigger automation workflows"
-                    logo={<Mail className="h-6 w-6 text-blue-400" />}
-                    status="disconnected"
-                    type="crm"
-                    onConnect={() => console.log("Connect ActiveCampaign")}
-                  />
-                  <IntegrationCard
-                    name="Salesforce"
-                    description="Enterprise CRM integration for large teams"
-                    logo={<div className="text-blue-500 font-bold text-lg">SF</div>}
-                    status="disconnected"
-                    type="crm"
-                    isPremium
-                    onConnect={() => console.log("Connect Salesforce")}
-                  />
-                  <IntegrationCard
-                    name="Custom CRM"
-                    description="Connect via API or Zapier webhook"
-                    logo={<Database className="h-6 w-6 text-purple-400" />}
-                    status="disconnected"
-                    type="crm"
-                    comingSoon
-                  />
-                </div>
-              </div>
-
-              {/* Calendar Section */}
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-purple-400" />
-                    Calendar & Booking
-                  </h2>
-                  <p className="text-sm text-text-secondary mt-1">
-                    Let qualified leads book calls directly from Instagram DMs
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <IntegrationCard
-                    name="Calendly"
-                    description="Share your Calendly link for instant booking"
-                    logo={<Calendar className="h-6 w-6 text-blue-500" />}
-                    status={connections.calendly?.status as any || "disconnected"}
-                    connectedAccount={connections.calendly?.account_name || undefined}
-                    type="calendar"
-                    features={[
-                      "Automatic link sharing",
-                      "Event type selection",
-                      "Buffer time management",
-                    ]}
-                    onConnect={() => handleConnect('calendly')}
-                    onDisconnect={() => handleDisconnect('calendly')}
-                  />
-                  <IntegrationCard
-                    name="Cal.com"
-                    description="Open-source scheduling with full customization"
-                    logo={<Calendar className="h-6 w-6 text-green-500" />}
-                    status={connections.calcom?.status as any || "disconnected"}
-                    connectedAccount={connections.calcom?.account_name || undefined}
-                    type="calendar"
-                    onConnect={() => handleConnect('calcom')}
-                    onDisconnect={() => handleDisconnect('calcom')}
-                  />
-                  <IntegrationCard
-                    name="Google Calendar"
-                    description="Check availability and create events"
-                    logo={<Calendar className="h-6 w-6 text-red-500" />}
-                    status="disconnected"
-                    type="calendar"
-                    onConnect={() => console.log("Connect Google Calendar")}
-                  />
-                  <IntegrationCard
-                    name="Microsoft Bookings"
-                    description="Integrate with Microsoft 365 calendar"
-                    logo={<Calendar className="h-6 w-6 text-blue-600" />}
-                    status="disconnected"
-                    type="calendar"
-                    onConnect={() => console.log("Connect MS Bookings")}
-                  />
-                  <IntegrationCard
-                    name="Acuity Scheduling"
-                    description="Advanced scheduling with payment options"
-                    logo={<Calendar className="h-6 w-6 text-purple-500" />}
-                    status="disconnected"
-                    type="calendar"
-                    isPremium
-                    onConnect={() => console.log("Connect Acuity")}
-                  />
-                </div>
-              </div>
-
-              {/* Webhooks Section */}
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-yellow-400" />
-                    Webhooks & Custom Integrations
-                  </h2>
-                  <p className="text-sm text-text-secondary mt-1">
-                    Send data to custom endpoints or connect to any platform
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <IntegrationCard
-                    name="Webhook"
-                    description="Send data to custom endpoints via webhooks"
-                    logo={<LinkIcon className="h-6 w-6 text-blue-400" />}
-                    status="disconnected"
-                    type="automation"
-                    features={[
-                      "Custom endpoint configuration",
-                      "Real-time event notifications",
-                      "Flexible payload formatting",
-                    ]}
-                    onConnect={() => console.log("Setup Webhook")}
-                  />
-                  <IntegrationCard
-                    name="Zapier"
-                    description="Connect to 5000+ apps via Zapier"
-                    logo={<Zap className="h-6 w-6 text-orange-500" />}
-                    status="disconnected"
-                    type="automation"
-                    features={[
-                      "5000+ app integrations",
-                      "No-code automation",
-                      "Multi-step workflows",
-                    ]}
-                    onConnect={() => console.log("Connect Zapier")}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
           {activeTab === "account" && (
             <div className="space-y-6 animate-fade-in">
               <Card className="glass-panel border-white/[0.08]">
@@ -433,84 +126,33 @@ export default function SettingsPage() {
             <Card className="glass-panel border-white/[0.08] animate-fade-in">
               <CardHeader className="border-b border-white/[0.06] pb-4">
                 <CardTitle>Connected Accounts</CardTitle>
-                <CardDescription>Manage your Instagram Business Account connections</CardDescription>
+                <CardDescription>Manage your Instagram connections</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary-400" />
-                  </div>
-                ) : connections.instagram?.connected ? (
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-success-500/20 bg-success-500/5 relative overflow-hidden">
-                    <div className="flex items-center gap-4 relative z-10">
-                       <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 p-0.5 shadow-lg">
-                         <div className="h-full w-full rounded-full bg-black flex items-center justify-center">
-                           <Instagram className="h-6 w-6 text-white" />
-                         </div>
+                <div className="flex items-center justify-between p-4 rounded-xl border border-success-500/20 bg-success-500/5 relative overflow-hidden">
+                  <div className="flex items-center gap-4 relative z-10">
+                     <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 p-0.5 shadow-lg">
+                       <div className="h-full w-full rounded-full bg-black flex items-center justify-center">
+                         <Instagram className="h-6 w-6 text-white" />
                        </div>
-                       <div>
-                         <p className="font-bold text-white text-lg">{connections.instagram.account_name || 'Instagram Account'}</p>
-                         <p className="text-xs text-success-500 flex items-center gap-1.5 font-medium uppercase tracking-wide mt-0.5">
-                           <CheckCircle className="h-3 w-3" />
-                           Connected & Active
-                         </p>
-                       </div>
-                    </div>
-                    <Button 
-                      onClick={() => handleDisconnect('instagram')}
-                      variant="outline" 
-                      size="sm" 
-                      className="border-white/10 text-text-muted hover:text-error-500 hover:border-error-500/50 hover:bg-error-500/10 bg-transparent relative z-10"
-                    >
-                      Disconnect
-                    </Button>
+                     </div>
+                     <div>
+                       <p className="font-bold text-white text-lg">@nocoded.ai</p>
+                       <p className="text-xs text-success-500 flex items-center gap-1.5 font-medium uppercase tracking-wide mt-0.5">
+                         <CheckCircle className="h-3 w-3" />
+                         Active & Listening
+                       </p>
+                     </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8 space-y-4">
-                    <div className="h-16 w-16 mx-auto rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 p-0.5 shadow-lg">
-                      <div className="h-full w-full rounded-full bg-background flex items-center justify-center">
-                        <Instagram className="h-8 w-8 text-white" />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-white mb-1">Connect Instagram</h3>
-                      <p className="text-sm text-text-secondary max-w-md mx-auto">
-                        Connect your Instagram Business Account to start automating DM responses
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => handleConnect('instagram')}
-                      disabled={connectingPlatform === 'instagram'}
-                      className="mx-auto"
-                    >
-                      {connectingPlatform === 'instagram' ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          Connecting...
-                        </>
-                      ) : (
-                        <>
-                          <Instagram className="h-4 w-4 mr-2" />
-                          Connect Instagram
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
+                  <Button variant="outline" size="sm" className="border-white/10 text-text-muted hover:text-error-500 hover:border-error-500/50 hover:bg-error-500/10 bg-transparent relative z-10">Disconnect</Button>
+                </div>
                 
-                {/* Connect Additional Account - Commented out for now, can enable multi-account later */}
-                {/* {connections.instagram?.connected && (
-                  <Button 
-                    onClick={() => handleConnect('instagram')}
-                    variant="outline" 
-                    className="w-full border-dashed border-white/10 text-text-muted hover:text-white hover:border-primary/50 hover:bg-primary/5 py-8 h-auto flex flex-col gap-2"
-                  >
-                    <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
-                      <Instagram className="h-5 w-5" />
-                    </div>
-                    <span>Connect Another Account</span>
-                  </Button>
-                )} */}
+                <Button variant="outline" className="w-full border-dashed border-white/10 text-text-muted hover:text-white hover:border-primary/50 hover:bg-primary/5 py-8 h-auto flex flex-col gap-2">
+                  <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
+                    <Instagram className="h-5 w-5" />
+                  </div>
+                  <span>Connect Another Account</span>
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -522,7 +164,7 @@ export default function SettingsPage() {
                 <AlertCircle className="h-5 w-5 text-warning-500 shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-bold text-warning-500">Automation Safety Warning</h4>
-                  <p className="text-xs text-text-secondary mt-1">Rate limits have not been configured for the new account. We&apos;ve applied conservative defaults.</p>
+                  <p className="text-xs text-text-secondary mt-1">Rate limits have not been configured for the new account. We've applied conservative defaults.</p>
                 </div>
                 <Button size="sm" variant="outline" className="ml-auto border-warning-500/20 text-warning-500 hover:bg-warning-500/10 h-8">Fix</Button>
               </div>
@@ -573,6 +215,46 @@ export default function SettingsPage() {
                    </div>
                 </CardContent>
               </Card>
+            </div>
+          )}
+
+          {activeTab === "integrations" && (
+            <div className="space-y-6 animate-fade-in">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* GoHighLevel */}
+                  <Card className="glass-panel border-white/[0.08] hover:border-primary/30 transition-all group relative overflow-hidden">
+                    <CardContent className="p-6 space-y-4 relative z-10">
+                       <div className="flex justify-between items-start">
+                          <div className="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            GHL
+                          </div>
+                          <span className="px-2 py-1 rounded-md bg-white/5 text-text-muted text-xs border border-white/10">crm</span>
+                       </div>
+                       <div>
+                         <h3 className="font-bold text-white text-lg">GoHighLevel</h3>
+                         <p className="text-sm text-text-secondary mt-1">Sync leads and opportunities.</p>
+                       </div>
+                       <Button variant="outline" className="w-full border-white/10 hover:bg-white/5 hover:text-white">Connect</Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Airtable */}
+                  <Card className="glass-panel border-white/[0.08] hover:border-primary/30 transition-all group relative overflow-hidden">
+                    <CardContent className="p-6 space-y-4 relative z-10">
+                       <div className="flex justify-between items-start">
+                          <div className="h-12 w-12 rounded-xl bg-yellow-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            <Database className="h-6 w-6" />
+                          </div>
+                          <span className="px-2 py-1 rounded-md bg-white/5 text-text-muted text-xs border border-white/10">database</span>
+                       </div>
+                       <div>
+                         <h3 className="font-bold text-white text-lg">Airtable</h3>
+                         <p className="text-sm text-text-secondary mt-1">Export conversation logs.</p>
+                       </div>
+                       <Button variant="outline" className="w-full border-white/10 hover:bg-white/5 hover:text-white">Connect</Button>
+                    </CardContent>
+                  </Card>
+               </div>
             </div>
           )}
 

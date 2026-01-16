@@ -11,7 +11,6 @@ interface MetricCardProps {
   };
   description?: string;
   icon?: React.ReactNode;
-  trendColor?: string; // Optional override
 }
 
 export function MetricCard({ title, value, change, description, icon }: MetricCardProps) {
