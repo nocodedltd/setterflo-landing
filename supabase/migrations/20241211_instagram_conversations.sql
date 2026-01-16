@@ -11,114 +11,238 @@
 -- ============================================================
 
 -- ============================================================
--- 1. CONVERSATIONS TABLE
+-- 1. ALTER EXISTING CONVERSATIONS TABLE
 -- ============================================================
--- Stores conversation threads between SetterFlo users and Instagram leads
-CREATE TABLE IF NOT EXISTS public.conversations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
-  -- User identification (which SetterFlo user owns this conversation)
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  
-  -- Instagram account identification (which Instagram account received the message)
-  instagram_account_id TEXT NOT NULL, -- Instagram Business Account ID from oauth_connections
-  oauth_connection_id UUID REFERENCES public.oauth_connections(id) ON DELETE SET NULL,
-  
-  -- Lead identification (the Instagram user messaging us)
-  instagram_user_id TEXT NOT NULL, -- Instagram user ID of the lead
-  instagram_username TEXT, -- @username if available
-  instagram_name TEXT, -- Display name if available
-  
-  -- Conversation metadata
-  instagram_thread_id TEXT, -- Instagram's thread ID (if available)
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived', 'closed', 'snoozed')),
-  unread_count INTEGER NOT NULL DEFAULT 0,
-  
-  -- AI control
-  ai_enabled BOOLEAN NOT NULL DEFAULT true,
-  ai_paused_at TIMESTAMPTZ,
-  ai_paused_reason TEXT,
-  
-  -- Lead qualification state (for AI agent system)
-  qualification_state TEXT DEFAULT 'new' CHECK (qualification_state IN ('new', 'qualifying', 'qualified', 'not_interested', 'booked', 'closed')),
-  
-  -- Timestamps
-  last_message_at TIMESTAMPTZ,
-  last_message_preview TEXT,
-  first_contact_at TIMESTAMPTZ DEFAULT NOW(),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  
-  -- Ensure one conversation per user/account/lead combination
-  UNIQUE(user_id, instagram_account_id, instagram_user_id)
-);
+-- The conversations table already exists with:
+-- - ig_user_id (UUID) → instagram_profiles.id
+-- - instagram_account_id (UUID) → nullable
+--
+-- We'll ADD new columns for our multi-tenant architecture:
+-- - instagram_account_id_text (TEXT) - Instagram Business Account ID from oauth_connections
+-- - instagram_user_id (TEXT) - Instagram user ID string of the lead
+-- - oauth_connection_id - Link to oauth_connections
+-- - qualification_state - Lead qualification tracking
 
--- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON public.conversations(user_id);
-CREATE INDEX IF NOT EXISTS idx_conversations_instagram_account_id ON public.conversations(instagram_account_id);
-CREATE INDEX IF NOT EXISTS idx_conversations_instagram_user_id ON public.conversations(instagram_user_id);
+-- Add new columns (if they don't exist)
+DO $$ 
+BEGIN
+  -- Instagram Business Account ID as TEXT (from oauth_connections)
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'conversations' 
+    AND column_name = 'instagram_account_id_text'
+  ) THEN
+    ALTER TABLE public.conversations 
+    ADD COLUMN instagram_account_id_text TEXT;
+  END IF;
+
+  -- OAuth connection reference
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'conversations' 
+    AND column_name = 'oauth_connection_id'
+  ) THEN
+    ALTER TABLE public.conversations 
+    ADD COLUMN oauth_connection_id UUID REFERENCES public.oauth_connections(id) ON DELETE SET NULL;
+  END IF;
+
+  -- Instagram user ID as TEXT (the lead's Instagram ID string)
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'conversations' 
+    AND column_name = 'instagram_user_id'
+  ) THEN
+    ALTER TABLE public.conversations 
+    ADD COLUMN instagram_user_id TEXT;
+  END IF;
+
+  -- Instagram username
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'conversations' 
+    AND column_name = 'instagram_username'
+  ) THEN
+    ALTER TABLE public.conversations 
+    ADD COLUMN instagram_username TEXT;
+  END IF;
+
+  -- Instagram display name
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'conversations' 
+    AND column_name = 'instagram_name'
+  ) THEN
+    ALTER TABLE public.conversations 
+    ADD COLUMN instagram_name TEXT;
+  END IF;
+
+  -- AI control fields
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'conversations' 
+    AND column_name = 'ai_paused_at'
+  ) THEN
+    ALTER TABLE public.conversations 
+    ADD COLUMN ai_paused_at TIMESTAMPTZ;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'conversations' 
+    AND column_name = 'ai_paused_reason'
+  ) THEN
+    ALTER TABLE public.conversations 
+    ADD COLUMN ai_paused_reason TEXT;
+  END IF;
+
+  -- Lead qualification state
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'conversations' 
+    AND column_name = 'qualification_state'
+  ) THEN
+    ALTER TABLE public.conversations 
+    ADD COLUMN qualification_state TEXT DEFAULT 'new' 
+    CHECK (qualification_state IN ('new', 'qualifying', 'qualified', 'not_interested', 'booked', 'closed'));
+  END IF;
+
+  -- First contact timestamp
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'conversations' 
+    AND column_name = 'first_contact_at'
+  ) THEN
+    ALTER TABLE public.conversations 
+    ADD COLUMN first_contact_at TIMESTAMPTZ DEFAULT NOW();
+  END IF;
+END $$;
+
+-- Indexes for performance (only create if they don't exist)
+CREATE INDEX IF NOT EXISTS idx_conversations_instagram_account_id_text ON public.conversations(instagram_account_id_text);
+CREATE INDEX IF NOT EXISTS idx_conversations_instagram_user_id_text ON public.conversations(instagram_user_id);
 CREATE INDEX IF NOT EXISTS idx_conversations_oauth_connection_id ON public.conversations(oauth_connection_id);
-CREATE INDEX IF NOT EXISTS idx_conversations_status ON public.conversations(status);
 CREATE INDEX IF NOT EXISTS idx_conversations_qualification_state ON public.conversations(qualification_state);
-CREATE INDEX IF NOT EXISTS idx_conversations_last_message_at ON public.conversations(last_message_at DESC NULLS LAST);
-CREATE INDEX IF NOT EXISTS idx_conversations_user_status ON public.conversations(user_id, status);
 
 -- ============================================================
--- 2. MESSAGES TABLE
+-- 2. ALTER EXISTING MESSAGES TABLE
 -- ============================================================
--- Stores individual messages within conversations
-CREATE TABLE IF NOT EXISTS public.messages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
-  -- Conversation reference
-  conversation_id UUID NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
-  
-  -- Message content
-  text TEXT NOT NULL,
-  sender TEXT NOT NULL CHECK (sender IN ('lead', 'user', 'ai')),
-  -- 'lead' = message from Instagram user
-  -- 'user' = message sent by SetterFlo user (manual)
-  -- 'ai' = message sent by AI agent
-  
-  -- Message type
-  message_type TEXT NOT NULL DEFAULT 'text' CHECK (message_type IN ('text', 'image', 'video', 'voice', 'story_reply', 'story_mention', 'reaction')),
-  
-  -- Instagram metadata
-  instagram_message_id TEXT UNIQUE, -- Instagram's message ID
-  instagram_timestamp TIMESTAMPTZ, -- When Instagram says the message was sent
-  
-  -- Read status
-  is_read BOOLEAN NOT NULL DEFAULT false,
-  read_at TIMESTAMPTZ,
-  
-  -- AI metadata (for AI-generated messages)
-  generated_by_ai BOOLEAN NOT NULL DEFAULT false,
-  ai_model TEXT, -- e.g., 'gpt-4', 'claude-3'
-  ai_confidence FLOAT CHECK (ai_confidence >= 0 AND ai_confidence <= 1),
-  ai_prompt TEXT, -- The prompt used to generate this message (for debugging)
-  ai_tools_used JSONB, -- Tools the AI used (e.g., ["send_dm", "create_deal"])
-  
-  -- Media attachments
-  media_url TEXT,
-  media_type TEXT, -- 'image', 'video', 'audio'
-  media_thumbnail_url TEXT,
-  
-  -- Error tracking (if message failed to send)
-  send_error TEXT,
-  send_retry_count INTEGER DEFAULT 0,
-  
-  -- Timestamps
-  sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+-- The messages table already exists with:
+-- - ig_user_id (UUID) → instagram_profiles.id
+-- - conversation_id (UUID) → conversations.id
+--
+-- We'll ADD new columns for AI metadata and enhanced tracking
 
--- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON public.messages(conversation_id);
-CREATE INDEX IF NOT EXISTS idx_messages_instagram_message_id ON public.messages(instagram_message_id);
-CREATE INDEX IF NOT EXISTS idx_messages_sender ON public.messages(sender);
-CREATE INDEX IF NOT EXISTS idx_messages_sent_at ON public.messages(sent_at DESC);
-CREATE INDEX IF NOT EXISTS idx_messages_generated_by_ai ON public.messages(generated_by_ai);
-CREATE INDEX IF NOT EXISTS idx_messages_is_read ON public.messages(is_read) WHERE is_read = false;
+-- Add new columns to messages (if they don't exist)
+DO $$ 
+BEGIN
+  -- Instagram timestamp
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'messages' 
+    AND column_name = 'instagram_timestamp'
+  ) THEN
+    ALTER TABLE public.messages 
+    ADD COLUMN instagram_timestamp TIMESTAMPTZ;
+  END IF;
+
+  -- Read tracking
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'messages' 
+    AND column_name = 'read_at'
+  ) THEN
+    ALTER TABLE public.messages 
+    ADD COLUMN read_at TIMESTAMPTZ;
+  END IF;
+
+  -- AI metadata
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'messages' 
+    AND column_name = 'ai_model'
+  ) THEN
+    ALTER TABLE public.messages 
+    ADD COLUMN ai_model TEXT;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'messages' 
+    AND column_name = 'ai_prompt'
+  ) THEN
+    ALTER TABLE public.messages 
+    ADD COLUMN ai_prompt TEXT;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'messages' 
+    AND column_name = 'ai_tools_used'
+  ) THEN
+    ALTER TABLE public.messages 
+    ADD COLUMN ai_tools_used JSONB;
+  END IF;
+
+  -- Media metadata
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'messages' 
+    AND column_name = 'media_type'
+  ) THEN
+    ALTER TABLE public.messages 
+    ADD COLUMN media_type TEXT;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'messages' 
+    AND column_name = 'media_thumbnail_url'
+  ) THEN
+    ALTER TABLE public.messages 
+    ADD COLUMN media_thumbnail_url TEXT;
+  END IF;
+
+  -- Error tracking
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'messages' 
+    AND column_name = 'send_error'
+  ) THEN
+    ALTER TABLE public.messages 
+    ADD COLUMN send_error TEXT;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'messages' 
+    AND column_name = 'send_retry_count'
+  ) THEN
+    ALTER TABLE public.messages 
+    ADD COLUMN send_retry_count INTEGER DEFAULT 0;
+  END IF;
+END $$;
+
+-- Additional indexes for performance
+CREATE INDEX IF NOT EXISTS idx_messages_instagram_timestamp ON public.messages(instagram_timestamp);
+CREATE INDEX IF NOT EXISTS idx_messages_read_at ON public.messages(read_at) WHERE read_at IS NULL;
 
 -- ============================================================
 -- 3. AUTO-UPDATE TRIGGERS
@@ -298,7 +422,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 COMMENT ON TABLE public.conversations IS 'Stores Instagram DM conversation threads between SetterFlo users and leads';
 COMMENT ON TABLE public.messages IS 'Stores individual messages within Instagram DM conversations';
-COMMENT ON COLUMN public.conversations.instagram_account_id IS 'Instagram Business Account ID from oauth_connections.platform_user_id';
+COMMENT ON COLUMN public.conversations.instagram_account_id_text IS 'Instagram Business Account ID (TEXT) from oauth_connections.platform_user_id';
 COMMENT ON COLUMN public.conversations.qualification_state IS 'Current state in the lead qualification flow';
 COMMENT ON COLUMN public.messages.sender IS 'lead = from Instagram user, user = manual from SetterFlo user, ai = AI-generated';
 COMMENT ON COLUMN public.messages.ai_tools_used IS 'JSON array of tools the AI agent used to generate this message';

@@ -11,9 +11,9 @@ import { decryptToken } from '@/lib/oauth/encryption';
 export interface Conversation {
   id: string;
   user_id: string;
-  instagram_account_id: string;
+  instagram_account_id_text: string | null; // TEXT column for Instagram Business Account ID
   oauth_connection_id: string | null;
-  instagram_user_id: string;
+  instagram_user_id: string | null; // TEXT column for Instagram user ID
   instagram_username: string | null;
   instagram_name: string | null;
   instagram_thread_id: string | null;
@@ -22,12 +22,15 @@ export interface Conversation {
   ai_enabled: boolean;
   ai_paused_at: string | null;
   ai_paused_reason: string | null;
-  qualification_state: 'new' | 'qualifying' | 'qualified' | 'not_interested' | 'booked' | 'closed';
+  qualification_state: 'new' | 'qualifying' | 'qualified' | 'not_interested' | 'booked' | 'closed' | null;
   last_message_at: string | null;
   last_message_preview: string | null;
-  first_contact_at: string;
+  first_contact_at: string | null;
   created_at: string;
   updated_at: string;
+  // Legacy columns (may exist in existing schema)
+  ig_user_id?: string; // UUID reference to instagram_profiles
+  instagram_account_id?: string; // UUID reference (legacy)
 }
 
 export interface Message {
@@ -112,12 +115,12 @@ export async function getOrCreateConversation(
 ): Promise<Conversation> {
   const supabase = await createClient();
   
-  // Try to find existing conversation
+  // Try to find existing conversation using the new TEXT columns
   const { data: existing } = await supabase
     .from('conversations')
     .select('*')
     .eq('user_id', userId)
-    .eq('instagram_account_id', instagramAccountId)
+    .eq('instagram_account_id_text', instagramAccountId)
     .eq('instagram_user_id', instagramUserId)
     .single();
   
@@ -130,7 +133,7 @@ export async function getOrCreateConversation(
     .from('conversations')
     .insert({
       user_id: userId,
-      instagram_account_id: instagramAccountId,
+      instagram_account_id_text: instagramAccountId, // Use TEXT column
       instagram_user_id: instagramUserId,
       instagram_username: instagramUsername || null,
       instagram_name: instagramName || null,
