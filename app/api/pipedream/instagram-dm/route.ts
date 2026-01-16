@@ -5,6 +5,8 @@ import {
   createMessage,
   updateConversationQualificationState,
 } from '@/lib/instagram/conversations';
+import { AIOrchestrator } from '@/lib/ai/agents/orchestrator';
+import { buildConversationContext } from '@/lib/ai/agents/context-builder';
 
 /**
  * Pipedream Instagram DM Webhook Handler
@@ -131,27 +133,26 @@ export async function POST(request: Request) {
 
     console.log('✅ Message stored:', storedMessage.id);
 
-    // Step 4: TODO - Process with AI agent
-    // This is where we'll call the AI agent system to:
-    // - Analyze the message
-    // - Determine qualification state
-    // - Generate response
-    // - Decide on actions (send DM, create deal, book calendar, etc.)
+    // Step 4: Process with AI agent system
+    const orchestrator = new AIOrchestrator();
     
-    // For now, return a placeholder structure
-    const aiResponse = await generateAIResponse({
-      conversationId: conversation.id,
-      userId: userInfo.userId,
-      message: messageText,
-      qualificationState: conversation.qualification_state,
+    // Build conversation context
+    const context = await buildConversationContext(
+      userInfo.userId,
+      conversation.id,
       instagramUserId,
-      accessToken: userInfo.accessToken,
+      instagramAccountId,
+      conversation.qualification_state || 'new'
+    );
+    
+    // Process message with AI agents
+    const aiResponse = await orchestrator.processMessage(context, messageText);
+    
+    console.log('🤖 AI Response:', {
+      action: aiResponse.action,
+      nextState: aiResponse.nextQualificationState,
+      toolsUsed: aiResponse.toolsUsed,
     });
-
-    // Step 5: Update conversation qualification state if changed
-    if (aiResponse.nextQualificationState && aiResponse.nextQualificationState !== conversation.qualification_state) {
-      await updateConversationQualificationState(conversation.id, aiResponse.nextQualificationState);
-    }
 
     // Step 6: Return instructions for Pipedream
     return NextResponse.json({
@@ -183,97 +184,7 @@ export async function POST(request: Request) {
   }
 }
 
-/**
- * Generate AI response based on conversation context
- * 
- * TODO: Replace with actual AI agent system that:
- * - Uses Vercel AI SDK or similar
- * - Has access to user's CRM/Calendar integrations
- * - Can call tools (send DM, create deal, book calendar, etc.)
- * - Maintains conversation context
- */
-async function generateAIResponse({
-  conversationId,
-  userId,
-  message,
-  qualificationState,
-  instagramUserId,
-  accessToken,
-}: {
-  conversationId: string;
-  userId: string;
-  message: string;
-  qualificationState: string;
-  instagramUserId: string;
-  accessToken: string;
-}): Promise<{
-  action: 'send_dm' | 'book_calendar' | 'create_deal' | 'none';
-  reply: string | null;
-  nextQualificationState?: 'new' | 'qualifying' | 'qualified' | 'not_interested' | 'booked' | 'closed';
-  shouldBook: boolean;
-  shouldCreateDeal: boolean;
-  dealData?: any;
-  calendarData?: any;
-}> {
-  // PLACEHOLDER - Replace with actual AI implementation
-  // This will be replaced with a multi-agent AI system that:
-  // 1. Analyzes the message
-  // 2. Determines qualification state
-  // 3. Generates appropriate response
-  // 4. Decides on actions (CRM, calendar, etc.)
-  
-  const messageLower = message.toLowerCase();
-  
-  // Simple state machine for now
-  if (qualificationState === 'new') {
-    return {
-      action: 'send_dm',
-      reply: "Hi! Thanks for reaching out. I'd love to help you book a discovery call. What are you currently struggling with in your business?",
-      nextQualificationState: 'qualifying',
-      shouldBook: false,
-      shouldCreateDeal: true,
-      dealData: {
-        name: `Instagram Lead - ${instagramUserId.substring(0, 8)}`,
-        stage: 'New Lead',
-        source: 'Instagram DM',
-        qualification_state: 'qualifying',
-      }
-    };
-  }
-  
-  if (qualificationState === 'qualifying') {
-    if (messageLower.includes('book') || messageLower.includes('call') || messageLower.includes('schedule')) {
-      return {
-        action: 'book_calendar',
-        reply: "Great! I'd love to schedule a call with you. What's your email address?",
-        nextQualificationState: 'booking',
-        shouldBook: true,
-        shouldCreateDeal: false,
-        calendarData: {
-          event_type: 'discovery-call',
-          duration: 30,
-        }
-      };
-    }
-    
-    return {
-      action: 'send_dm',
-      reply: "I understand. Based on what you've shared, I think a 30-minute strategy call could really help. Would you like to schedule that?",
-      nextQualificationState: 'qualifying',
-      shouldBook: false,
-      shouldCreateDeal: false
-    };
-  }
-  
-  // Default response
-  return {
-    action: 'send_dm',
-    reply: "Thanks for your message! How can I help you today?",
-    nextQualificationState: qualificationState as any,
-    shouldBook: false,
-    shouldCreateDeal: false
-  };
-}
+// Legacy placeholder function removed - now using AIOrchestrator
 
 /**
  * Webhook verification for Instagram (required by Meta)
