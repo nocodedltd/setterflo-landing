@@ -257,7 +257,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger for conversations
+-- Trigger for conversations (drop if exists first)
+DROP TRIGGER IF EXISTS update_conversations_updated_at ON public.conversations;
 CREATE TRIGGER update_conversations_updated_at
   BEFORE UPDATE ON public.conversations
   FOR EACH ROW
@@ -282,6 +283,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Drop trigger if exists before creating
+DROP TRIGGER IF EXISTS update_conversation_on_new_message ON public.messages;
 CREATE TRIGGER update_conversation_on_new_message
   AFTER INSERT ON public.messages
   FOR EACH ROW
@@ -296,6 +299,12 @@ ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 
 -- Conversations: Users can only access their own conversations
+-- Drop existing policies if they exist, then create new ones
+DROP POLICY IF EXISTS "Users can view their own conversations" ON public.conversations;
+DROP POLICY IF EXISTS "Users can insert their own conversations" ON public.conversations;
+DROP POLICY IF EXISTS "Users can update their own conversations" ON public.conversations;
+DROP POLICY IF EXISTS "Users can delete their own conversations" ON public.conversations;
+
 CREATE POLICY "Users can view their own conversations"
   ON public.conversations
   FOR SELECT
@@ -318,6 +327,12 @@ CREATE POLICY "Users can delete their own conversations"
   USING (auth.uid() = user_id);
 
 -- Messages: Users can only access messages in their own conversations
+-- Drop existing policies if they exist, then create new ones
+DROP POLICY IF EXISTS "Users can view messages in their own conversations" ON public.messages;
+DROP POLICY IF EXISTS "Users can insert messages in their own conversations" ON public.messages;
+DROP POLICY IF EXISTS "Users can update messages in their own conversations" ON public.messages;
+DROP POLICY IF EXISTS "Users can delete messages in their own conversations" ON public.messages;
+
 CREATE POLICY "Users can view messages in their own conversations"
   ON public.messages
   FOR SELECT
